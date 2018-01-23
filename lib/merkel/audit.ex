@@ -9,7 +9,7 @@ defmodule Merkel.Proof.Audit do
 
   @base_2 2
 
-  defstruct key: nil, index: -1, path: [], tree_hash: nil
+  defstruct key: nil, index: -1, path: []
 
   # Create audit proof
   # This includes the set of sibling hashes in the path to the merkle root, 
@@ -27,19 +27,18 @@ defmodule Merkel.Proof.Audit do
 
     index = Map.get(tree.index, hash) # Retrieve the index value
 
-    Logger.info("index is #{index}")
-
     if index == nil, do: raise "Index value not found"
 
     path = traverse(tree.root, index, [])
     
-    %Audit{key: hash, index: index, path: path, tree_hash: tree.root.value}
+    %Audit{key: hash, index: index, path: path}
   end
 
 
-  def verify(%Audit{key: key_hash, index: index, path: trail, tree_hash: tree_hash})
-  when is_binary(key_hash) and is_integer(index) and is_list(trail) 
+  def verify(%Audit{key: key_hash, index: index, path: trail}, tree_hash)
+  when is_binary(key_hash) and is_list(trail) and is_integer(index)
   and is_binary(hd(trail)) and is_binary(tree_hash) do
+
     
     # Basically we walk through the list of audit hashes (trail) which represent
     # a distinct tree level

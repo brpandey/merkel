@@ -7,8 +7,11 @@ defmodule Merkel.BinaryHashTree do
  
   @children_per_node 2
 
-
   defstruct size: nil, root: nil, index: %{}
+
+  # Public helper routine to get merkle tree (root) hash
+  def tree_hash(%BHTree{root: nil}), do: nil
+  def tree_hash(%BHTree{root: root}), do: root.value 
 
   def hash(str) do
     :crypto.hash(:sha256, str) |> Base.encode16(case: :lower)
@@ -30,6 +33,7 @@ defmodule Merkel.BinaryHashTree do
 
     0 == (x &&& (x - 1))
   end
+
 
 
   # Create static tree given static list
@@ -97,7 +101,9 @@ defmodule Merkel.BinaryHashTree do
 
     
   @doc "Provides dump of tree info to be used in Inspect protocol implementation"
-  def info(%BHTree{} = tree) do {tree.size, tree.root} end
+  def info(%BHTree{root: r} = tree) do 
+    {tree.size, {r.value, r.height, r.left, r.right}} # Ensures root hash is fully visible
+  end
 
 
   ##############################################################################
