@@ -2,8 +2,6 @@ defmodule Merkel.BinaryHashTree do
 
   alias Merkel.BinaryHashTree, as: BHTree
   alias Merkel.BinaryNode, as: BNode
-
-#  @type t :: %BHTree{ root: Merkel.BinaryNode.t, height: non_neg_integer}
  
   @children_per_node 2
 
@@ -11,7 +9,7 @@ defmodule Merkel.BinaryHashTree do
 
   # Public helper routine to get merkle tree (root) hash
   def tree_hash(%BHTree{root: nil}), do: nil
-  def tree_hash(%BHTree{root: root}), do: root.value 
+  def tree_hash(%BHTree{root: root}), do: root.key_hash 
 
   def hash(str) do
     :crypto.hash(:sha256, str) |> Base.encode16(case: :lower)
@@ -36,42 +34,28 @@ defmodule Merkel.BinaryHashTree do
 
 
 
-  # Create static tree given static list
+  # Create static tree given static list of {k,v} pairs
   # List must be a power of 2
   def create([]), do: raise "List can not be empty"
-  def create(list) when is_list(list) do
+  def create(tuple_list) when is_list(tuple_list) and is_tuple(hd(tuple_list)) do
 
-    size = Enum.count(list)
+    size = Enum.count(tuple_list)
 
     # Size must be a power of two
     if not(power_of_2?(size)), do: raise "List size must be power of 2"
     
-    # Create hashes list from original vector
-    hashes = Enum.map(list, &hash/1)
 
-    # Store list hashes by index
-    index_map_by_hash = 
-      hashes
-      |> Enum.with_index # by default index starts at 0
-      |> Enum.reduce(%{}, fn {k,v}, acc -> Map.put(acc, k, v) end)
+    # Sort the list by the 0th element of each tuple the key
+    list = List.keysort(tuple_list, 0) 
 
     # Create tree recursively
-    root = create_level(hashes)
+    root = Enum.map(list, &leaf/1) |> create_level
 
-    %BHTree{size: size, root: root, index: index_map_by_hash}
+    %BHTree{size: size, root: root}
   end
 
 
-  defp create_level([root]), do: root
-  defp create_level(list) when is_list(list) and is_binary(hd(list)) do
-
-    # 1) First create the leaves
-    # 2) Then recursively create the inner nodes of the tree on up to the root
-
-    list |> Enum.map(&leaf/1) |> create_level
-  end
-
-
+  defp create_level([{root, _acc}]), do: root
   defp create_level(children) when is_list(children) do
 
     # 1) Chunk children into sibling groups
@@ -80,29 +64,40 @@ defmodule Merkel.BinaryHashTree do
 
     children 
     |> Enum.chunk_every(@children_per_node) # 1
-    |> Enum.map(fn [l, r] -> inner(l, r) end) # 2
+    |> Enum.map(fn [{l, l_acc}, {r, r_acc}] -> 
+      inner(l, r, {l_acc, r_acc})
+    end) # 2
     |> create_level # 3
   end
 
 
   # Create leaf node
-  defp leaf(hash) when is_binary(hash) do 
-    %BNode{value: hash, height: 0} 
+  defp leaf({k,v}) when is_binary(k) do 
+    node = %BNode{key_hash: hash(k), search_key: k, key: k, value: v, height: 0} 
+
+    # Along with the node we pass the largest key from the left subtree 
+    # (since it's nil we use the key)
+    {node, k}
   end
 
   # Create inner node
-  defp inner(%BNode{} = left, %BNode{} = right) do
-    %BNode{
-      value: hash(left.value <> right.value),
+  defp inner(%BNode{} = left, %BNode{} = right, {l_lkey, r_lkey} = _largest_acc) do
+    node = %BNode{
+      key_hash: hash(left.key_hash <> right.key_hash),
+      search_key: l_lkey, # we use the largest key from the left subtree as the search key
       height: Kernel.max(left.height, right.height) + 1,
       left: left, right: right
     }
+
+    # we pass on the largest key from the right subtree to be used as a search key
+    # for an inner node at a higher level
+    {node, r_lkey}
   end
 
     
   @doc "Provides dump of tree info to be used in Inspect protocol implementation"
-  def info(%BHTree{root: r} = tree) do 
-    {tree.size, {r.value, r.height, r.left, r.right}} # Ensures root hash is fully visible
+  def info(%BHTree{root: r} = tree) do
+    {tree.size, BNode.info(r)} # Ensures root hash is fully visible
   end
 
 

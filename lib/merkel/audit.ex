@@ -7,9 +7,7 @@ defmodule Merkel.Proof.Audit do
 
   require Logger
 
-  @base_2 2
-
-  defstruct key: nil, index: -1, path: []
+  defstruct key: nil, path: []
 
   # Create audit proof
   # This includes the set of sibling hashes in the path to the merkle root, 
@@ -17,61 +15,28 @@ defmodule Merkel.Proof.Audit do
 
   # Either create the audit proof with the hash or with the original string data
 
-  def create(%BHTree{} = tree, {:data, str}) when is_binary(str) do
-    create(tree, {:hash, BHTree.hash(str)})
+  def create(%BHTree{root: nil}, _key), do: nil
+  def create(%BHTree{root: %BNode{} = root}, key) when is_binary(key) do
+
+    path = traverse(root, key, [], [])
+
+    %Audit{key: key, path: path}
   end
 
 
-  def create(%BHTree{root: %BNode{} = root} = tree, {:hash, hash})
-  when is_binary(hash) and not(is_nil(root)) do
+  def verify(%Audit{key: key, path: trail}, tree_hash) 
+  when is_binary(key) and is_tuple(trail) and is_binary(tree_hash) do
 
-    index = Map.get(tree.index, hash) # Retrieve the index value
-
-    if index == nil, do: raise "Index value not found"
-
-    path = traverse(tree.root, index, [])
-    
-    %Audit{key: hash, index: index, path: path}
-  end
-
-
-  def verify(%Audit{key: key_hash, index: index, path: trail}, tree_hash)
-  when is_binary(key_hash) and is_list(trail) and is_integer(index)
-  and is_binary(hd(trail)) and is_binary(tree_hash) do
-
-    
     # Basically we walk through the list of audit hashes (trail) which represent
     # a distinct tree level
-
-    # We start of with the height at the next higher level, e.g. the parent level
-    # of the key_hash and first sibling audit hash, which is 1.
-
-    # From there we keep pushing up to the next level
-
-    # We check to make sure how we should concatenate the hashes properly based on,
-    # for each level, if the audit hash sibling is to the left or right of the path sibling
-    # if the path sibling is on the left, then we hash like hash(path <> audit)
-    # if the path sibling is on the right, then we hash like hash(audit <> path)
-
-    {acc_hash, _} = 
-      Enum.reduce(
-        trail, {key_hash, 1}, fn audit_hash, {hash_acc, height_acc} ->
-
-          Logger.info("hash_acc is #{hash_acc}, audit_hash is #{audit_hash}")
-
-          # true means the path is on the right and the audit hash is the left sibling
-          # so instead of hash(hash_acc, audit_hash) we do hash(audit_hash, hash_acc)
-
-          flip = path_direction(index, height_acc)
-
-          hash_acc = hash_by_order(hash_acc, audit_hash, flip)
-          {hash_acc, height_acc + 1}
-        end)
     
-    Logger.info("acc_hash is #{acc_hash}, tree_hash is #{tree_hash}")
+    # Given the nested tuple trail, we tail recurse to the leaf level 
+    # using pattern matching, then create the hash accumulation
+    acc_hash = prove(key, trail, [])
 
     acc_hash == tree_hash
   end
+
 
 
   #####################
@@ -83,70 +48,87 @@ defmodule Merkel.Proof.Audit do
   # These are the sibling node hashes along the way from the leaf in question to the
   # merkle tree root.
 
-  # We start from the root, so the trail is purposely composed backwards
+  # We start from the root, and the trail is composed backwards starting with leaf level
 
-  defp traverse(%BNode{height: 0}, _index, audit_trail), do: audit_trail
-  defp traverse(%BNode{} = inner, index, audit_trail) when is_integer(index) and is_list(audit_trail) do
+  defp traverse(%BNode{height: 0}, _key, audit_trail, pattern_trail)
+  when is_list(audit_trail) and is_list(pattern_trail) do 
 
+    # Lists are from leaf level to next to root level
 
-    Logger.info("traverse 1 is inner: #{inspect inner}, index: #{inspect index}, audit_trail: #{audit_trail}")
-    
-    # At each tree level we call path_next to get the next audit hash,
-    # and the next node level to traverse to
+    # Combine the two lists so we can easily reduce
+    # audit trail is just a list of the audit hashes
+    # pattern trail tracks the ordering
+    zipper = Enum.zip(audit_trail, pattern_trail) 
 
-    {next_audit_hash, next_node} = path_next(inner, index)
+    # Create the audit path with the hash order information already encoded into the path
+    # The path is a nested tuple :)
+    # (This way we don't have to keep track of left and rights separately or use extra overhead structures)
+    Enum.reduce(zipper, {}, fn {audit_hash, directive}, acc ->      
+      case directive do
+        :audit_on_right -> {acc, audit_hash}
+        :audit_on_left -> {audit_hash, acc}
+      end
+    end)
 
-    Logger.info("traverse 2 is next_audit_hash: #{next_audit_hash}, next_node: #{inspect next_node}")
-
-    # (To verify the hashes, it needs to be done from the bottom up, 
-    # so prepending to the list of hashes puts them in correct order)
-
-    traverse(next_node, index, [next_audit_hash] ++ audit_trail)
   end
 
 
-  # Given the current level, returns where the audit node lies (l,r) 
-  # and the direction to traverse lies (l,r) - these are mutually exclusive
+  defp traverse(%BNode{search_key: s_key, left: l, right: r} = i, key, audit_trail, pattern_trail) 
+  when is_binary(key) and is_list(audit_trail) and is_list(pattern_trail) 
+  and not(is_nil(l)) and not(is_nil(r)) do
 
-  # The audit path are the sibling nodes on the path from the leaf to the root
+    # At each tree level we generate:
+    # 1) the next audit pattern order, 
+    # 2) the next audit hash,
+    # 3) and the next node level to traverse to
 
-  defp path_next(%BNode{height: height, left: l, right: r}, index)
-  when is_integer(height) and is_integer(index) and not(is_nil(l)) and not(is_nil(r)) do
+    # true means the path is on the left and the audit hash is the right sibling hash
+    # so when we verify, we do hash(hash_acc, audit_hash)
 
-    # If the key lies on the right subtree, the audit hash is on the left sibling node
-    # Else if the key lies on the left subtree, the audit hash is on the right sibling node
+    # false means the path is on the right and the audit hash is the left sibling
+    # so when we verify, instead of hash(hash_acc, audit_hash) we do hash(audit_hash, hash_acc)
 
-    {_audit_sibling_hash, _traverse_next_node} =
-      case path_direction(index, height) do
-        true -> {l.value, r} 
-        false -> {r.value, l}
+    {next_pattern, next_audit, next_node} =
+      case key <= s_key do
+        true -> {:audit_on_right, r.key_hash, l}
+        false -> {:audit_on_left, l.key_hash, r}
       end
 
+    # By putting the accumulated states within the function as params, we are tail recursive
+    traverse(next_node, key, 
+             [next_audit] ++ audit_trail, 
+             [next_pattern] ++ pattern_trail)
   end
 
 
-  # Returns 0 if the path is to the left or 1 if the path is to the right
-  defp path_direction(index, height) when is_integer(index) and is_integer(height) do
+  # We use pattern matching to descend through our tuple, 
+  # audit path representation, keeping track of the audit path via a stack
+  # Eventually we reduce the stack with the hash accumulated value
 
-    # From the perspective of the node at height "height", is the index in its right (1) subtree
-    # or left (0) subtree?
-
-    # Since this is a binary tree we can figure out where the leaf lies, given
-    # the current height of the tree and its index.  We assume the indices start from 
-    # 0 on the bottom left leaf of the tree
-
-    x = :math.pow(@base_2, height) |> round
-    rem(index, x) >= div(x, 2)
+  defp prove(key, {acc, r}, stack) when is_binary(r) and is_tuple(acc) do
+    prove(key, acc, [{r, :audit_on_right}] ++ stack)
   end
 
-
-  defp hash_by_order(x, y, flip)
-  when is_binary(x) and is_binary(y) and is_boolean(flip) do
-    case flip do
-      true -> BHTree.hash(y <> x) # if true flip
-      false -> BHTree.hash(x <> y)
-    end
+  defp prove(key, {l, acc}, stack) when is_binary(l) and is_tuple(acc) do
+    prove(key, acc, [{l, :audit_on_left}] ++ stack)
   end
-  
+
+  defp prove(key, {}, stack) when is_binary(key) and is_list(stack) do
+
+    key_hash = BHTree.hash(key)
+
+    # We verify the key from bottom up
+    # Hence the stack is prepended to, allowing us to start at the leaf level
+
+    Enum.reduce(stack, key_hash, fn {audit_hash, directive}, hash_acc ->
+
+      case directive do
+        :audit_on_left -> BHTree.hash(audit_hash <> hash_acc)
+        :audit_on_right -> BHTree.hash(hash_acc <> audit_hash)
+      end
+
+    end)
+  end
+
 
 end
