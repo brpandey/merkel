@@ -55,6 +55,27 @@ defmodule Merkel.BinaryHashTree do
   end
 
 
+  # Simple lookup routine
+  def lookup(%BHTree{root: r}, key), do: do_lookup(r, key)
+
+
+  ###################
+  # PRIVATE HELPERS #
+  ###################
+
+
+  defp do_lookup(nil, key), do: {:error, "key: #{key} not found in tree"}
+  defp do_lookup(%BNode{key: key, value: v}, key), do: {:ok, v}
+  defp do_lookup(%BNode{search_key: s_key, left: l, right: r}, key)
+  when is_binary(key) do
+    case key > s_key do
+      true -> do_lookup(r, key)
+      false -> do_lookup(l, key)
+    end
+  end
+
+
+  # Helpers to create tree level-wise
   defp create_level([{root, _acc}]), do: root
   defp create_level(children) when is_list(children) do
 
@@ -79,6 +100,7 @@ defmodule Merkel.BinaryHashTree do
     # (since it's nil we use the key)
     {node, k}
   end
+
 
   # Create inner node
   defp inner(%BNode{} = left, %BNode{} = right, {l_lkey, r_lkey} = _largest_acc) do

@@ -2,7 +2,7 @@ Merkel
 ==========
 ![Logo](https://raw.githubusercontent.com/brpandey/merkel/master/priv/images/merkel.png)
 
-Implements a no-frills merkle binary hash tree. [Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree)
+Implements a no-frills static merkle binary hash tree. [Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree)
 
 Merkle trees are a beautiful data structure named in honor of distinguished computer scientist Ralph Merkle.
 

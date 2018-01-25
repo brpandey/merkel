@@ -13,8 +13,6 @@ defmodule Merkel.Proof.Audit do
   # This includes the set of sibling hashes in the path to the merkle root, 
   # that will ensure verification
 
-  # Either create the audit proof with the hash or with the original string data
-
   def create(%BHTree{root: nil}, _key), do: nil
   def create(%BHTree{root: %BNode{} = root}, key) when is_binary(key) do
 
@@ -23,7 +21,7 @@ defmodule Merkel.Proof.Audit do
     %Audit{key: key, path: path}
   end
 
-
+  # Verify the audit key and path are authenticated as part of the merkle tree
   def verify(%Audit{key: key, path: trail}, tree_hash) 
   when is_binary(key) and is_tuple(trail) and is_binary(tree_hash) do
 
@@ -48,21 +46,21 @@ defmodule Merkel.Proof.Audit do
   # These are the sibling node hashes along the way from the leaf in question to the
   # merkle tree root.
 
-  # We start from the root, and the trail is composed backwards starting with leaf level
+  # We start from the root, and the trail is delivered backwards starting with leaf level
 
   defp traverse(%BNode{height: 0}, _key, audit_trail, pattern_trail)
   when is_list(audit_trail) and is_list(pattern_trail) do 
 
     # Lists are from leaf level to next to root level
 
-    # Combine the two lists so we can easily reduce
-    # audit trail is just a list of the audit hashes
-    # pattern trail tracks the ordering
+    # Combine the two lists so we can easily reduce to the audit patterned path
+    # The audit trail is just a list of the audit hashes
+    # The pattern trail tracks the ordering
     zipper = Enum.zip(audit_trail, pattern_trail) 
 
     # Create the audit path with the hash order information already encoded into the path
-    # The path is a nested tuple :)
     # (This way we don't have to keep track of left and rights separately or use extra overhead structures)
+    # The path is a nested tuple :)
     Enum.reduce(zipper, {}, fn {audit_hash, directive}, acc ->      
       case directive do
         :audit_on_right -> {acc, audit_hash}
@@ -73,7 +71,7 @@ defmodule Merkel.Proof.Audit do
   end
 
 
-  defp traverse(%BNode{search_key: s_key, left: l, right: r} = i, key, audit_trail, pattern_trail) 
+  defp traverse(%BNode{search_key: s_key, left: l, right: r}, key, audit_trail, pattern_trail) 
   when is_binary(key) and is_list(audit_trail) and is_list(pattern_trail) 
   and not(is_nil(l)) and not(is_nil(r)) do
 
@@ -101,9 +99,9 @@ defmodule Merkel.Proof.Audit do
   end
 
 
-  # We use pattern matching to descend through our tuple, 
-  # audit path representation, keeping track of the audit path via a stack
-  # Eventually we reduce the stack with the hash accumulated value
+  # We use pattern matching to descend through our audit path tuple, 
+  # we keep track of the audit path via a stack,
+  # Eventually we reduce the stack to the accumulated hash value
 
   defp prove(key, {acc, r}, stack) when is_binary(r) and is_tuple(acc) do
     prove(key, acc, [{r, :audit_on_right}] ++ stack)
@@ -117,7 +115,7 @@ defmodule Merkel.Proof.Audit do
 
     key_hash = BHTree.hash(key)
 
-    # We verify the key from bottom up
+    # We verify the key from bottom up (leaves)
     # Hence the stack is prepended to, allowing us to start at the leaf level
 
     Enum.reduce(stack, key_hash, fn {audit_hash, directive}, hash_acc ->
