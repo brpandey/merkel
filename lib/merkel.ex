@@ -1,7 +1,7 @@
 defmodule Merkel do
 
   alias Merkel.BinaryHashTree, as: Tree
-  alias Merkel.Proof.Audit
+  alias Merkel.Audit
 
   def new(list) when is_list(list) do
     Tree.create(list)

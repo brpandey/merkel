@@ -1,9 +1,8 @@
-defmodule Merkel.Proof.Audit do
+defmodule Merkel.Audit do
 
-  alias Merkel.Proof.Audit
-
-  alias Merkel.BinaryHashTree, as: BHTree
-  alias Merkel.BinaryNode, as: BNode
+  alias Merkel.Audit
+  alias Merkel.BinaryHashTree, as: Tree
+  alias Merkel.BinaryNode, as: Node
 
   require Logger
 
@@ -13,8 +12,8 @@ defmodule Merkel.Proof.Audit do
   # This includes the set of sibling hashes in the path to the merkle root, 
   # that will ensure verification
 
-  def create(%BHTree{root: nil}, _key), do: nil
-  def create(%BHTree{root: %BNode{} = root}, key) when is_binary(key) do
+  def create(%Tree{root: nil}, _key), do: nil
+  def create(%Tree{root: %Node{} = root}, key) when is_binary(key) do
 
     path = traverse(root, key, [], [])
 
@@ -48,7 +47,7 @@ defmodule Merkel.Proof.Audit do
 
   # We start from the root, and the trail is delivered backwards starting with leaf level
 
-  defp traverse(%BNode{height: 0}, _key, audit_trail, pattern_trail)
+  defp traverse(%Node{height: 0}, _key, audit_trail, pattern_trail)
   when is_list(audit_trail) and is_list(pattern_trail) do 
 
     # Lists are from leaf level to next to root level
@@ -71,7 +70,7 @@ defmodule Merkel.Proof.Audit do
   end
 
 
-  defp traverse(%BNode{search_key: s_key, left: l, right: r}, key, audit_trail, pattern_trail) 
+  defp traverse(%Node{search_key: s_key, left: l, right: r}, key, audit_trail, pattern_trail) 
   when is_binary(key) and is_list(audit_trail) and is_list(pattern_trail) 
   and not(is_nil(l)) and not(is_nil(r)) do
 
@@ -113,18 +112,16 @@ defmodule Merkel.Proof.Audit do
 
   defp prove(key, {}, stack) when is_binary(key) and is_list(stack) do
 
-    key_hash = BHTree.hash(key)
+    key_hash = Tree.hash(key)
 
     # We verify the key from bottom up (leaves)
     # Hence the stack is prepended to, allowing us to start at the leaf level
 
     Enum.reduce(stack, key_hash, fn {audit_hash, directive}, hash_acc ->
-
       case directive do
-        :audit_on_left -> BHTree.hash(audit_hash <> hash_acc)
-        :audit_on_right -> BHTree.hash(hash_acc <> audit_hash)
+        :audit_on_left -> Tree.hash_concat(audit_hash, hash_acc)
+        :audit_on_right -> Tree.hash_concat(hash_acc, audit_hash)
       end
-
     end)
   end
 
