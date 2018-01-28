@@ -19,8 +19,8 @@ Merkle trees are a beautiful data structure named in honor of distinguished comp
 
 ## Noteworthy
 
-# Uses AVL rotations to keep the tree balanced
-# Initial creation from list creates a balanced tree without any initial rotations or rehashings
+* Uses AVL rotations to keep the tree balanced
+* Initial creation from list creates a balanced tree without any initial rotations or rehashings
 
 ## Usage
 
@@ -62,7 +62,7 @@ iex> Merkel.lookup(m, "walrus")
 {:ok, 49}
 ```
 
-# Insert key value pairs (and notice rotations)
+* Insert key value pairs (and notice rotations)
 
 ```elixir
 iex> m = Merkel.insert(m, {"aardvark", 999})
