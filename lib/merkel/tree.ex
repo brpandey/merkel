@@ -67,7 +67,29 @@ defmodule Merkel.BinaryHashTree do
   
   # Simple lookup routine O(log n) since tree is balanced
   def lookup(%Tree{root: r}, key), do: get(r, key)
-  
+
+
+  def delete(%Tree{root: r, size: size} = t, key) when is_binary(key) do
+
+    # Ensure the key resides in the tree, or pass back error tuple
+    case lookup(t, key) do
+      {:ok, _} -> 
+        
+        root = 
+          case drop(r, key) do
+            nil -> nil
+            %Node{} = x -> x
+            {%Node{} = x, _l} -> x
+          end
+        
+        {:ok, %Tree{ t | root: root, size: size - 1} } 
+
+      {:error, _} = msg -> msg
+    end
+
+  end
+
+
   ###################
   # PRIVATE HELPERS #
   ###################
@@ -238,7 +260,50 @@ defmodule Merkel.BinaryHashTree do
       false -> get(l, key)
     end
   end
-  
+
+  ##############################################################################
+  # Delete Node Helpers
+
+  # NOTE: We don't rebalance after a delete since they are infrequent
+
+
+  # Base case - Leaf node which matches key (Key must reside in tree)
+  defp drop(%Node{key: key, left: nil, right: nil}, key), do: nil
+
+  # Inner node - Recurse to right subtree
+  defp drop(%Node{search_key: s_key, left: l, right: r} = n, key)
+  when not(is_nil(l)) and not(is_nil(r)) and key > s_key do
+
+    # If we found the matching key and deleted it, remove this current node by replacing with the left child
+    # Else, if we have an updated child, update it as the right child and recompute the hash value
+    
+    # In order to handle updating the search_keys higher up we add a second return param
+
+    # Right subtree
+    # If largest search_key is presented, We pass it on up
+    case drop(r, key) do
+      nil -> {l, n.search_key} # n.search_key is now the largest search key given the subtree rooted at node n
+      %Node{} = x -> %Node{ n | right: x} |> update_hash
+      {%Node{} = x, largest} -> { %Node{ n | right: x} |> update_hash, largest }
+    end
+  end
+
+
+  # Inner node - Recurse to left subtree
+  defp drop(%Node{search_key: s_key, left: l, right: r} = n, key)
+  when not(is_nil(l)) and not(is_nil(r)) and key <= s_key do
+
+    # If we found the matching key and deleted it, remove this current node by replacing with the right child
+    # Else, if we have an updated child, update it as the left child and recompute the hash value
+      
+    # Left subtree
+    # If largest search_key is presented, we consume it and don't pass it up
+    case drop(l, key) do
+      nil -> r # Since we deleted on the left leaf we don't need to propagate a search key
+      %Node{} = x -> %Node{ n | left: x} |> update_hash
+      {%Node{} = x, largest} -> %Node{ n | search_key: largest, left: x} |> update_hash
+    end
+  end
   
   ##############################################################################
   # Hash helpers

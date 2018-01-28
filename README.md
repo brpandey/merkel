@@ -94,6 +94,23 @@ iex> m = Merkel.insert(m, {"elephant", "He's big"})
     {"676cb750...", "zebra", 0, nil, nil}}}}}>
 ```
 
+* Delete key
+
+```elixir
+iex> Merkel.delete(m, "aardvark")
+{:ok,
+ #Merkel.Tree<{6,
+  {"8ed22afe60870ac4f40647dcc8e47b9cba76acdae7dd5cd14419ebe529926b95", "daisy",
+   3,
+   {"5ad27451...", "anteater", 2, {"b0ce2ef9...", "anteater", 0, nil, nil},
+    {"42029ef2...", "daisy", 0, nil, nil}},
+   {"add50264...", "giraffe", 2,
+    {"3b002bc0...", "elephant", 1, {"cd08c4c4...", "elephant", 0, nil, nil},
+     {"6bb7e067...", "giraffe", 0, nil, nil}},
+    {"9b02597c...", "walrus", 1, {"96710146...", "walrus", 0, nil, nil},
+     {"676cb750...", "zebra", 0, nil, nil}}}}}>}
+```
+
 * Create audit proof
 
 ```elixir
