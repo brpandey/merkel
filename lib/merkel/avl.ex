@@ -12,7 +12,7 @@ defmodule Merkel.AVL do
   # AVL balance and rotation helpers
   def balance?(%Node{} = n), do: (n |> height_delta |> Kernel.abs) > 1
 
-  def balance(%Node{left: l, right: r} = node, search_key, fn_updater)
+  def balance(%Node{left: l, right: r} = node, search_key, fn_update)
   when is_binary(search_key) do
     
     # Using height delta we determine if we need to balance the tree at this node
@@ -44,7 +44,7 @@ defmodule Merkel.AVL do
       #  T1   T2
 
       delta > 1 and l != nil and search_key <= l.search_key ->
-        right_rotate(node, fn_updater)
+        right_rotate(node, fn_update)
 
       
       # Case 2, Right Right
@@ -64,7 +64,7 @@ defmodule Merkel.AVL do
 
 
       delta < -1 and r != nil and search_key > r.search_key -> 
-        left_rotate(node, fn_updater)
+        left_rotate(node, fn_update)
           
 
       # Case 3, Left Right
@@ -84,7 +84,7 @@ defmodule Merkel.AVL do
 
 
       delta > 1 and l != nil and search_key > l.search_key ->
-        %Node{node | left: left_rotate(l, fn_updater)} |> right_rotate(fn_updater)
+        %Node{node | left: left_rotate(l, fn_update)} |> right_rotate(fn_update)
 
 
       # Case 4, Right Left
@@ -104,7 +104,7 @@ defmodule Merkel.AVL do
 
 
       delta < -1 and r != nil and search_key <= r.search_key ->
-        %Node{node | right: right_rotate(r, fn_updater)} |> left_rotate(fn_updater)
+        %Node{node | right: right_rotate(r, fn_update)} |> left_rotate(fn_update)
 
 
       # Default case
@@ -127,16 +127,11 @@ _ =  """
   T1   T2
   """
 
-  defp right_rotate(%Node{left: %Node{left: x, right: t3} = y, right: t4} = z, updater) do
+  defp right_rotate(%Node{left: %Node{left: x, right: t3} = y, right: t4} = z, fn_update) do
     
     # Perform rotation, update heights and max interval
-    z = 
-      %Node{ z | left: t3, height: max_height(t3, t4) + 1 }
-      |> updater
-
-    _y = 
-      %Node{ y | right: z, height: max_height(x, z) + 1 }
-      |> updater
+    z = fn_update.(%Node{ z | left: t3, height: max_height(t3, t4) + 1 })
+    _y = fn_update.(%Node{ y | right: z, height: max_height(x, z) + 1 })
   end
 
 
@@ -152,18 +147,12 @@ _ = """
        T3  T4
   """
 
-  defp left_rotate(%Node{left: t1, right: %Node{left: t2, right: x} = y} = z, updater) do
+  defp left_rotate(%Node{left: t1, right: %Node{left: t2, right: x} = y} = z, fn_update) do
 
     # Perform rotation, update heights and max interval
-    z = 
-      %Node{ z | right: t2, height: max_height(t1, t2) + 1 }
-      |> updater
-
-    _y = 
-      %Node{ y | left: z, height: max_height(z, x) + 1 }
-      |> updater
+    z = fn_update.(%Node{ z | right: t2, height: max_height(t1, t2) + 1 })
+    _y = fn_update.(%Node{ y | left: z, height: max_height(z, x) + 1 })
   end
-
 
 
 

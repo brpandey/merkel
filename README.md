@@ -2,7 +2,7 @@ Merkel
 ==========
 ![Logo](https://raw.githubusercontent.com/brpandey/merkel/master/priv/images/merkel.png)
 
-Implements a no-frills static merkle binary hash tree. [Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree)
+Implements a dynamic merkle binary hash tree. [Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree)
 
 Merkle trees are a beautiful data structure named in honor of distinguished computer scientist Ralph Merkle.
 
@@ -19,48 +19,96 @@ Merkle trees are a beautiful data structure named in honor of distinguished comp
 
 ## Noteworthy
 
-To be added...
-
+# Uses AVL rotations to keep the tree balanced
+# Initial creation from list creates a balanced tree without any initial rotations or rehashings
 
 ## Usage
 
 * Helpful background
 
 ```elixir
-iex> l = [{"zebra", 23}, {"daisy", "932"}, {"giraffe", 29}, {"anteater", "12"}]
-iex> Enum.map(l, fn {k, _v} -> k end) |> Enum.map(&Merkel.BinaryHashTree.hash/1) |> Enum.with_index  
-[{"676cb75018edccf10fce6f376f2124e02c3293fa3fe8f953c75386198c714514", 0},
- {"42029ef215256f8fa9fedb53542ee6553eef76027b116f8fac5346211b1e473c", 1},
- {"6bb7e067447139b18f6094d2d15bcc264affde89a8b9f5227fe5b38abd8b19d7", 2},
- {"b0ce2ef96d43c0e0f83d57785f9a87b647065ca75360ca5e9de520e7f690c3f9", 3}]
+iex> l = [{"zebra", 23}, {"daisy", "932"}, {"giraffe", 29}, {"anteater", "12"}, {"walrus", 49}]
+
+iex> Enum.map(l, fn {k, _v} -> {k, Merkel.BinaryHashTree.hash(k)} end)
+
+[
+  {"zebra", "676cb75018edccf10fce6f376f2124e02c3293fa3fe8f953c75386198c714514"},
+  {"daisy", "42029ef215256f8fa9fedb53542ee6553eef76027b116f8fac5346211b1e473c"},
+  {"giraffe", "6bb7e067447139b18f6094d2d15bcc264affde89a8b9f5227fe5b38abd8b19d7"},
+  {"anteater", "b0ce2ef96d43c0e0f83d57785f9a87b647065ca75360ca5e9de520e7f690c3f9"},
+  {"walrus", "9671014645ce9d6f8bae746fded25064937658d712004bd01d8f4c093c387bf3"}
+]
+
 ```
 
 * Create new MHT
 
 ```elixir
 iex> m = Merkel.new(l)                                                                              
-#Merkel.Tree<{4,
- {"3d16890c4c0a80a443bfecc1b3c7b0742931bff09ab544b37615ece19a547496", "daisy",
-  2,
-  {"5ad27451...", "anteater", 1, {"b0ce2ef9...", "anteater", 0, nil, nil},
-   {"42029ef2...", "daisy", 0, nil, nil}},
-  {"a1ccb5b0...", "giraffe", 1, {"6bb7e067...", "giraffe", 0, nil, nil},
+ {"f92f0f98d165457a4122bbe165aefa14928f45943f9b11880b51d720a1ad37c1", "giraffe",
+  3,
+  {"bbe4b971...", "daisy", 2,
+   {"5ad27451...", "anteater", 1, {"b0ce2ef9...", "anteater", 0, nil, nil},
+    {"42029ef2...", "daisy", 0, nil, nil}},
+   {"6bb7e067...", "giraffe", 0, nil, nil}},
+  {"9b02597c...", "walrus", 1, {"96710146...", "walrus", 0, nil, nil},
+   {"676cb750...", "zebra", 0, nil, nil}}}>
+```
+
+* Lookup key
+
+```elixir
+iex> Merkel.lookup(m, "walrus")
+{:ok, 49}
+```
+
+# Insert key value pairs (and notice rotations)
+
+```elixir
+iex> m = Merkel.insert(m, {"aardvark", 999})
+#Merkel.Tree<{6,
+ {"17b632f2e3ee68ef4bb880825c7d6bf3c674c9f0fb4d8f81a5654590e107f936", "giraffe",
+  3,
+  {"b1f2e847...", "anteater", 2,
+   {"2fc521ec...", "aardvark", 1, {"cf9c1cb8...", "aardvark", 0, nil, nil},
+    {"b0ce2ef9...", "anteater", 0, nil, nil}},
+   {"92af87b4...", "daisy", 1, {"42029ef2...", "daisy", 0, nil, nil},
+    {"6bb7e067...", "giraffe", 0, nil, nil}}},
+  {"9b02597c...", "walrus", 1, {"96710146...", "walrus", 0, nil, nil},
    {"676cb750...", "zebra", 0, nil, nil}}}}>
+```
+
+```elixir
+iex> m = Merkel.insert(m, {"elephant", "He's big"})
+#Merkel.Tree<{7,
+ {"af4b1fc2c7a9189aad3b4b60ee8d5235c7df262264e77ce62622f32725eb0424", "daisy",
+  3,
+  {"17791536...", "anteater", 2,
+   {"2fc521ec...", "aardvark", 1, {"cf9c1cb8...", "aardvark", 0, nil, nil},
+    {"b0ce2ef9...", "anteater", 0, nil, nil}},
+   {"42029ef2...", "daisy", 0, nil, nil}},
+  {"add50264...", "giraffe", 2,
+   {"3b002bc0...", "elephant", 1, {"cd08c4c4...", "elephant", 0, nil, nil},
+    {"6bb7e067...", "giraffe", 0, nil, nil}},
+   {"9b02597c...", "walrus", 1, {"96710146...", "walrus", 0, nil, nil},
+    {"676cb750...", "zebra", 0, nil, nil}}}}}>
 ```
 
 * Create audit proof
 
 ```elixir
-iex> proof = Merkel.audit(m, "giraffe")
-%Merkel.Proof.Audit{key: "giraffe",
- path: {"5ad274513da265aacbc662d6b541e6e3ee5e3bf0522449e2163ac0df73e5b92c",
-  {{}, "676cb75018edccf10fce6f376f2124e02c3293fa3fe8f953c75386198c714514"}}}
-
+iex> proof = Merkel.audit(m, "elephant")
+%Merkel.Audit{
+  key: "elephant",
+  path: {"17791536269eca21572c30cd9068bd4549c590eb58b988c1086ae32f43e9afb4",
+   {{{}, "6bb7e067447139b18f6094d2d15bcc264affde89a8b9f5227fe5b38abd8b19d7"},
+    "9b02597cc10da600d73d06b42e10b5f6dfc2359eb13a282bf9eb8c9f4a45626d"}}
+}
 ```
 
 * Verify audit proof
 
 ```elixir
-iex> Merkel.verify(proof, "3d16890c4c0a80a443bfecc1b3c7b0742931bff09ab544b37615ece19a547496")
+iex> Merkel.verify(proof, Merkel.tree_hash(m))
 true
 ```
