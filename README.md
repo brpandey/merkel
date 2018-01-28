@@ -2,9 +2,11 @@ Merkel
 ==========
 ![Logo](https://raw.githubusercontent.com/brpandey/merkel/master/priv/images/merkel.png)
 
-Implements a dynamic merkle binary hash tree. [Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree)
+Implements a dynamic, merkle binary hash tree. [Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree)[Bitcoin](http://chimera.labs.oreilly.com/books/1234000001802/ch07.html#merkle_trees)
 
-Merkle trees are a beautiful data structure named in honor of distinguished computer scientist Ralph Merkle.
+Merkle trees are a beautiful data structure for summarizing and verifying data integrity.
+They are named in honor of distinguished computer scientist Ralph Merkle, while this library is named
+with a slight twist (or rotation) to salute Angela Merkel's push for algorithmic transparency.
 
 > Merkel Urges Transparency For Internet Giants’ Algorithms
 >

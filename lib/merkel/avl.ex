@@ -1,17 +1,24 @@
 defmodule Merkel.AVL do
   @moduledoc """
-  A self-balancing AVL tree ensures all insert operations are O(log n) 
-  and tree height is always O(log n)
+  Implements the AVL balance rotations for a binary tree
+  A self-balancing AVL tree ensures the tree height is always O(log n)
   """
 
-  alias Merkel.BinaryHashTree, as: Tree
   alias Merkel.BinaryNode, as: Node
 
 
   ##############################################################################
   # AVL balance and rotation helpers
+
+  @doc "Checks whether the tree rooted at node n needs to be balanced"
+  @spec balance?(Node.t) :: boolean
   def balance?(%Node{} = n), do: (n |> height_delta |> Kernel.abs) > 1
 
+  @doc """
+  Balances tree rooted at node n using avl rotations.
+  Runs the update callback function for each node that is affected by rotations
+  """
+  @spec balance(Node.t, String.t, function) :: Node.t
   def balance(%Node{left: l, right: r} = node, search_key, fn_update)
   when is_binary(search_key) do
     
@@ -127,6 +134,7 @@ _ =  """
   T1   T2
   """
 
+  @spec right_rotate(Node.t, function) :: Node.t
   defp right_rotate(%Node{left: %Node{left: x, right: t3} = y, right: t4} = z, fn_update) do
     
     # Perform rotation, update heights and max interval
@@ -147,6 +155,7 @@ _ = """
        T3  T4
   """
 
+  @spec left_rotate(Node.t, function) :: Node.t
   defp left_rotate(%Node{left: t1, right: %Node{left: t2, right: x} = y} = z, fn_update) do
 
     # Perform rotation, update heights and max interval
@@ -159,13 +168,16 @@ _ = """
   # Height helpers
 
   # Update max tree height
+  @spec max_height(Node.t | nil, Node.t | nil) :: non_neg_integer
   defp max_height(left, right) do
     Kernel.max(do_height(left), do_height(right))
   end
 
+  @spec height_delta(Node.t | nil) :: non_neg_integer
   defp height_delta(nil), do: 0
   defp height_delta(%Node{left: l, right: r}), do: do_height(l) - do_height(r)
 
+  @spec do_height(Node.t | nil) :: non_neg_integer
   defp do_height(nil), do: 0
   defp do_height(%Node{height: height}), do: height
 

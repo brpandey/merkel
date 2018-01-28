@@ -2,7 +2,7 @@ defmodule Merkel.BinaryHashTree do
   @moduledoc """
   Implements a merkle binary hash tree that is balanced using AVL rotations
   
-  Supports lookup, insert methods
+  Supports create, lookup, insert, delete
   
   Given an initial list of k-v pairs constructs an initial balanced
   tree without any initial rotations or initial rehashings
@@ -12,20 +12,28 @@ defmodule Merkel.BinaryHashTree do
   alias Merkel.BinaryNode, as: Node
   alias Merkel.AVL, as: AVL
   
-  @display_tree_size_limit 64
   
   defstruct size: nil, root: nil
   
-  # Public helper routine to get merkle tree (root) hash
-  def tree_hash(%Tree{root: nil}), do: nil
-  def tree_hash(%Tree{root: root}), do: root.key_hash 
+  @type t :: %__MODULE__{}
+  @type key :: String.t
+  @type value :: any
+
+  @type pair :: {key, value}
+
+  @type hash_algorithms :: :md5 | :ripemd160 | :sha | :sha224 | :sha256 | :sha384 | :sha512 
+
+
+  @display_tree_size_limit 64
+
+  @hash_algorithms [:md5, :ripemd160, :sha, :sha224, :sha256, :sha384, :sha512]
+
   
-  def hash(str) do
-    :crypto.hash(:sha256, str) |> Base.encode16(case: :lower)
-  end
-  
-  
-  # Create balanced tree given a list of {k,v} pairs or create empty tree
+  @doc """
+  Create balanced tree given a list of {k,v} pairs or create empty tree
+  """
+
+  @spec create( none | list(pair)) :: t | no_return 
   def create(), do: %Tree{size: 0}
   def create([]), do: raise "List can not be empty"
   def create([{k, _v} | _tail] = list) when is_binary(k) do
@@ -40,13 +48,19 @@ defmodule Merkel.BinaryHashTree do
     
     %Tree{size: size, root: root}
   end
-  
-  
+
+
+  @doc """
+  Returns key value pair if key lookup is successful
+  """
+  @spec lookup(t, key) :: {:ok, any} | {:error, String.t}
+  def lookup(%Tree{root: r}, key), do: get(r, key)
+    
   
   @doc """
-  Public insert method, adds leaf in O(log n) since the tree is balanced
+  Adds key value pair and then ensures tree is balanced.
   """
-  
+  @spec insert(t, pair) :: t
   def insert(%Tree{root: r} = tree, {k, _v} = data) when is_binary(k) do
     
     leaf = leaf(data)
@@ -64,11 +78,12 @@ defmodule Merkel.BinaryHashTree do
     %Tree{tree | root: root, size: size}
   end
   
-  
-  # Simple lookup routine O(log n) since tree is balanced
-  def lookup(%Tree{root: r}, key), do: get(r, key)
 
-
+  @doc """
+  Delete the specified key, ensuring it resides in the tree.  
+  Updates binary tree search keys
+  """
+  @spec delete(t, key) :: {:ok, t} | {:error, String.t}
   def delete(%Tree{root: r, size: size} = t, key) when is_binary(key) do
 
     # Ensure the key resides in the tree, or pass back error tuple
@@ -90,6 +105,30 @@ defmodule Merkel.BinaryHashTree do
   end
 
 
+
+  ###################
+  # PUBLIC HELPERS #
+  ###################
+
+
+  # Public helper routine to get merkle tree (root) hash
+  @spec tree_hash(t) :: nil | String.t
+  def tree_hash(%Tree{root: nil}), do: nil
+  def tree_hash(%Tree{root: root}), do: root.key_hash 
+
+  
+  @spec hash(key, hash_algorithms) :: String.t
+  def hash(str, type \\ :sha256) when type in @hash_algorithms do
+    case type do
+      :sha256 -> :crypto.hash(:sha256, str) |> Base.encode16(case: :lower)
+    end
+  end
+
+  @spec hash_concat(key | Node.t, key | Node.t) :: String.t
+  def hash_concat(lh, rh) when is_binary(lh) and is_binary(rh), do: hash(lh <> rh)
+  def hash_concat(%Node{} = l, %Node{} = r), do: hash(l.key_hash <> r.key_hash)
+
+
   ###################
   # PRIVATE HELPERS #
   ###################
@@ -102,6 +141,7 @@ defmodule Merkel.BinaryHashTree do
   # Used on setup
   
   # Divide number into its whole rough halves e.g. for 5 its 3 and 2
+  @spec partition(non_neg_integer) :: {non_neg_integer, non_neg_integer}
   defp partition(n) when is_integer(n), do: {n - Kernel.div(n, 2), Kernel.div(n, 2)} 
   
   # We are able to build the leaves first of the merkle tree and then the inner structure
@@ -134,6 +174,7 @@ defmodule Merkel.BinaryHashTree do
   # we first create the leaf nodes, then when we have two leaf
   # nodes (l and r) we create the inner nodes.
 
+  @spec partition_build(list(pair), non_neg_integer) :: tuple
 
   # Base case, e.g. empty list
   defp partition_build(list, 0) do
@@ -166,7 +207,8 @@ defmodule Merkel.BinaryHashTree do
   # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
   
   # Helpers to create tree, one node at a time
-  
+  @spec put(Node.t | nil, Node.t) :: Node.t
+
   # Base Case - empty tree - pattern match on empty node
   # Hence the first root node is just a leaf node (not an inner node)
   defp put(nil, %Node{} = leaf), do: leaf
@@ -217,10 +259,12 @@ defmodule Merkel.BinaryHashTree do
   # Node creation helpers  
   
   # Create leaf node
+  @spec leaf(pair) :: Node.t
   defp leaf({k,v}) when is_binary(k) do 
     %Node{key_hash: hash(k), search_key: k, key: k, value: v, height: 0} 
   end
   
+  @spec leaf_level(pair) :: {Node.t, String.t}
   defp leaf_level({k,v}) when is_binary(k) do 
     # Along with the node we pass the largest key from the left subtree 
     # (since it's nil we use the key)
@@ -229,6 +273,7 @@ defmodule Merkel.BinaryHashTree do
   
   
   # Create inner node
+  @spec inner(Node.t, Node.t, String.t) :: Node.t
   defp inner(%Node{} = l, %Node{} = r, s_key) when is_binary(s_key) do
     %Node{
       key_hash: hash_concat(l,r),
@@ -239,6 +284,7 @@ defmodule Merkel.BinaryHashTree do
   end
   
   # Create inner node using level order create
+  @spec inner_level(Node.t, Node.t, tuple) :: tuple
   defp inner_level(%Node{} = l, %Node{} = r, {l_lkey, r_lkey} = _largest_acc) do
 
     # we use the largest key from the left subtree as the search key
@@ -251,6 +297,7 @@ defmodule Merkel.BinaryHashTree do
   ##############################################################################
   # Lookup helpers
   
+  @spec get(nil | Node.t, key) :: {:ok, value} | {:error, String.t}
   defp get(nil, key), do: {:error, "key: #{key} not found in tree"}
   defp get(%Node{key: key, value: v}, key), do: {:ok, v}
   defp get(%Node{search_key: s_key, left: l, right: r}, key)
@@ -264,10 +311,11 @@ defmodule Merkel.BinaryHashTree do
   ##############################################################################
   # Delete Node Helpers
 
-  # NOTE: We don't rebalance after a delete since they are infrequent
+  # NOTE: We don't rebalance after a delete since they are assumed infrequent
 
 
   # Base case - Leaf node which matches key (Key must reside in tree)
+  @spec drop(Node.t, key) :: nil | Node.t | {Node.t, key}
   defp drop(%Node{key: key, left: nil, right: nil}, key), do: nil
 
   # Inner node - Recurse to right subtree
@@ -308,10 +356,9 @@ defmodule Merkel.BinaryHashTree do
   ##############################################################################
   # Hash helpers
   
-  def hash_concat(lh, rh) when is_binary(lh) and is_binary(rh), do: hash(lh <> rh)
-  def hash_concat(%Node{} = l, %Node{} = r), do: hash(l.key_hash <> r.key_hash)
   
   # Update hash
+  @spec update_hash(Node.t) :: Node.t
   defp update_hash(%Node{left: l, right: r} = node)
   when not(is_nil(l)) and not(is_nil(r)) do
     h = hash_concat(l,r)
@@ -320,6 +367,7 @@ defmodule Merkel.BinaryHashTree do
   
   # No rehash required since the children have the same hash values, 
   # return the update node
+  @spec update_hash(Node.t, Node.t) :: Node.t
   defp update_hash(
         %Node{left: %Node{key_hash: lh}, right: %Node{key_hash: rh}},
         %Node{left: %Node{key_hash: lh}, right: %Node{key_hash: rh}} = update) do 
@@ -333,14 +381,14 @@ defmodule Merkel.BinaryHashTree do
   when lh1 != lh2 or rh1 != rh2 do
     update_hash(update)
   end
-  
-  
+ 
   
   ##############################################################################
   # Inspect Protocol implementation -- custom behavior when inspect is invoked
   
   
   @doc "Provides dump of tree info to be used in Inspect protocol implementation"
+  @spec info(t) :: nil | tuple
   def info(%Tree{size: _size, root: nil}), do: nil
   def info(%Tree{size: size, root: r} = tree) do
     case size <= @display_tree_size_limit do
@@ -348,7 +396,6 @@ defmodule Merkel.BinaryHashTree do
       false -> {tree.size, {r.key_hash, r.height, "...", "..."}}
     end
   end
-  
   
   
   # Allows users to inspect this module type in a controlled manner
@@ -360,6 +407,5 @@ defmodule Merkel.BinaryHashTree do
       concat ["#Merkel.Tree<", info, ">"]
     end
   end
-  
   
 end

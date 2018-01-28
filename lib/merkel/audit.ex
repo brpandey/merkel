@@ -8,10 +8,14 @@ defmodule Merkel.Audit do
 
   defstruct key: nil, path: []
 
+  @type t :: %__MODULE__{}
+
+
   # Create audit proof
   # This includes the set of sibling hashes in the path to the merkle root, 
   # that will ensure verification
 
+  @spec create(Tree.t, Tree.key) :: nil | t
   def create(%Tree{root: nil}, _key), do: nil
   def create(%Tree{root: %Node{} = root}, key) when is_binary(key) do
 
@@ -21,6 +25,7 @@ defmodule Merkel.Audit do
   end
 
   # Verify the audit key and path are authenticated as part of the merkle tree
+  @spec verify(t, String.t) :: boolean
   def verify(%Audit{key: key, path: trail}, tree_hash) 
   when is_binary(key) and is_tuple(trail) and is_binary(tree_hash) do
 
@@ -46,7 +51,7 @@ defmodule Merkel.Audit do
   # merkle tree root.
 
   # We start from the root, and the trail is delivered backwards starting with leaf level
-
+  @spec traverse(Node.t, Tree.key, list, list) ::  tuple
   defp traverse(%Node{height: 0}, _key, audit_trail, pattern_trail)
   when is_list(audit_trail) and is_list(pattern_trail) do 
 
@@ -101,7 +106,7 @@ defmodule Merkel.Audit do
   # We use pattern matching to descend through our audit path tuple, 
   # we keep track of the audit path via a stack,
   # Eventually we reduce the stack to the accumulated hash value
-
+  @spec prove(Tree.key, tuple, list) :: String.t
   defp prove(key, {acc, r}, stack) when is_binary(r) and is_tuple(acc) do
     prove(key, acc, [{r, :audit_on_right}] ++ stack)
   end
