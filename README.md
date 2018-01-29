@@ -6,7 +6,7 @@ Implements a balanced, merkle binary hash tree. [Wikipedia](https://en.wikipedia
 
 Merkle trees are a beautiful data structure for summarizing and verifying data integrity.
 They are named in honor of distinguished computer scientist Ralph Merkle. This library is named
-with a slight twist (or rotation) to salute Angela Merkel's push for algorithmic transparency.
+with a slight twist (le to el) to salute Angela Merkel's push for algorithmic transparency.
 
 > Merkel Urges Transparency For Internet Giants’ Algorithms
 >
@@ -178,12 +178,15 @@ aardvark ant elep giraffe  penguin walrus
 ```
 
 * Update value for key
+* Get all keys
 
 ```elixir
 iex> m6 = Merkel.insert(m5, {"walrus", {"eats too many fish"}})
 ..(same as above)..
 iex> Merkel.lookup(m6, "walrus")
 {:ok, {"eats too many fish"}}
+iex> Merkel.keys(m6)
+["aardvark", "anteater", "elephant", "giraffe", "penguin", "walrus", "zebra"]
 ```
 
 * Create audit proof

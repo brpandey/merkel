@@ -6,7 +6,10 @@ defmodule Merkel do
 
   # Merkle tree CRUD
   @spec new(none | list(tuple)) :: Tree.t
-  def new(), do: Tree.create()
+  def new() do 
+    t = Tree.create()
+    IO.inspect "tree is: #{t}"
+  end
   def new(list) when is_list(list), do: Tree.create(list)
 
   @spec tree_hash(Tree.t) :: String.t
@@ -14,6 +17,9 @@ defmodule Merkel do
 
   @spec lookup(Tree.t, Tree.key) :: tuple
   def lookup(%Tree{} = t, key) when is_binary(key), do: Tree.lookup(t, key)
+
+  @spec keys(Tree.t) :: list
+  def keys(%Tree{} = t), do: Tree.keys(t)
 
   @spec insert(Tree.t, Tree.pair) :: Tree.t
   def insert(%Tree{} = t, {k,v}) when is_binary(k), do: Tree.insert(t, {k,v})

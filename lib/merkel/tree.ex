@@ -2,7 +2,7 @@ defmodule Merkel.BinaryHashTree do
   @moduledoc """
   Implements a merkle binary hash tree that is balanced using AVL rotations
   
-  Supports create, lookup, insert, delete
+  Supports create, lookup, keys, insert, delete
   
   Given an initial list of k-v pairs constructs an initial balanced
   tree without any initial rotations or initial rehashings
@@ -32,7 +32,6 @@ defmodule Merkel.BinaryHashTree do
   @doc """
   Create balanced tree given a list of {k,v} pairs or create empty tree
   """
-
   @spec create( none | list(pair)) :: t | no_return 
   def create(), do: %Tree{size: 0}
   def create([]), do: raise "List can not be empty"
@@ -55,8 +54,15 @@ defmodule Merkel.BinaryHashTree do
   """
   @spec lookup(t, key) :: {:ok, any} | {:error, String.t}
   def lookup(%Tree{root: r}, key), do: get(r, key)
-    
-  
+
+
+  @doc "Returns list of keys from bottom left of tree to bottom right"
+  @spec keys(t) :: list
+  def keys(%Tree{root: r}) do
+    do_keys(r, []) |> Enum.reverse
+  end
+
+
   @doc """
   Adds key value pair and then ensures tree is balanced.
   """
@@ -78,7 +84,6 @@ defmodule Merkel.BinaryHashTree do
     %Tree{tree | root: root, size: size}
   end
   
-
   @doc """
   Delete the specified key, ensuring it resides in the tree.  
   Updates binary tree search keys
@@ -103,7 +108,6 @@ defmodule Merkel.BinaryHashTree do
     end
 
   end
-
 
 
   ###################
@@ -312,6 +316,25 @@ defmodule Merkel.BinaryHashTree do
     end
   end
 
+
+  # Helpers to retrieve key list
+
+  # Base case nil node
+  defp do_keys(nil, keys_acc), do: keys_acc
+
+  # Leaf case, return key
+  defp do_keys(%Node{key: k, left: nil, right: nil}, keys_acc) do
+    [k] ++ keys_acc # prepend is faster
+  end
+  
+  # Inner node case
+  defp do_keys(%Node{left: l, right: r}, keys_acc)
+  when not(is_nil(l)) and not(is_nil(r)) do
+    acc = do_keys(l, keys_acc)
+    do_keys(r, acc)
+  end
+
+
   ##############################################################################
   # Delete Node Helpers
 
@@ -393,8 +416,8 @@ defmodule Merkel.BinaryHashTree do
   
   @doc "Provides dump of tree info to be used in Inspect protocol implementation"
   @spec info(t) :: nil | tuple
-  def info(%Tree{size: _size, root: nil}), do: nil
-  def info(%Tree{size: size, root: r} = tree) do
+  def info(%Tree{size: 0, root: nil}), do: {0, nil}
+  def info(%Tree{size: size, root: r} = tree) when size > 0 do
     case size <= @display_tree_size_limit do
       true -> {tree.size, Node.info(r)} # Ensures root hash is fully visible
       false -> {tree.size, {r.key_hash, r.height, "...", "..."}}
