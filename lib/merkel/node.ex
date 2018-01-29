@@ -9,11 +9,9 @@ defmodule Merkel.BinaryNode do
   # instead using an extra type field or creating two node types
   defstruct key_hash: nil, search_key: nil, key: nil, value: nil, height: -1, left: nil, right: nil
   
-
   @type t :: %__MODULE__{}
 
   @display_first_n_bytes 4
-
 
   @doc "Provides dump of node info to be used in Inspect protocol implementation"
   @spec info(t) :: tuple

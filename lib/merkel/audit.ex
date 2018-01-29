@@ -10,7 +10,6 @@ defmodule Merkel.Audit do
 
   @type t :: %__MODULE__{}
 
-
   # Create audit proof
   # This includes the set of sibling hashes in the path to the merkle root, 
   # that will ensure verification
