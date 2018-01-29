@@ -21,11 +21,11 @@ defmodule Merkel.BinaryHashTree do
 
   @type pair :: {key, value}
 
-  @type hash_algorithms :: :md5 | :ripemd160 | :sha | :sha224 | :sha256 | :sha384 | :sha512 
 
+  @default_hash :sha256
+  @hash_type Application.get_env(:merkel, :hash_algorithm)
 
   @display_tree_size_limit 64
-
   @hash_algorithms [:md5, :ripemd160, :sha, :sha224, :sha256, :sha384, :sha512]
 
   
@@ -117,10 +117,14 @@ defmodule Merkel.BinaryHashTree do
   def tree_hash(%Tree{root: root}), do: root.key_hash 
 
   
-  @spec hash(key, hash_algorithms) :: String.t
-  def hash(str, type \\ :sha256) when type in @hash_algorithms do
+  @spec hash(key) :: String.t
+  def hash(str, type \\ @hash_type) do
+
     case type do
-      :sha256 -> :crypto.hash(:sha256, str) |> Base.encode16(case: :lower)
+      t when t in @hash_algorithms -> 
+        :crypto.hash(t, str) |> Base.encode16(case: :lower)
+      _ -> # default case
+        :crypto.hash(@default_hash, str) |> Base.encode16(case: :lower)
     end
   end
 
