@@ -1,5 +1,7 @@
 defmodule Merkel.Audit do
 
+  import Merkel.Crypto
+
   alias Merkel.Audit
   alias Merkel.BinaryHashTree, as: Tree
   alias Merkel.BinaryNode, as: Node
@@ -116,15 +118,15 @@ defmodule Merkel.Audit do
 
   defp prove(key, {}, stack) when is_binary(key) and is_list(stack) do
 
-    key_hash = Tree.hash(key)
+    key_hash = hash(key)
 
     # We verify the key from bottom up (leaves)
     # Hence the stack is prepended to, allowing us to start at the leaf level
 
     Enum.reduce(stack, key_hash, fn {audit_hash, directive}, hash_acc ->
       case directive do
-        :audit_on_left -> Tree.hash_concat(audit_hash, hash_acc)
-        :audit_on_right -> Tree.hash_concat(hash_acc, audit_hash)
+        :audit_on_left -> hash_concat(audit_hash, hash_acc)
+        :audit_on_right -> hash_concat(hash_acc, audit_hash)
       end
     end)
   end

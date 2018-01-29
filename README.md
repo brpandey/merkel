@@ -31,7 +31,7 @@ with a slight twist (le to el) to salute Angela Merkel's push for algorithmic tr
 ```elixir
 iex> l = [{"zebra", 23}, {"daisy", "932"}, {"giraffe", 29}, {"anteater", "12"}, {"walrus", 49}]
 
-iex> Enum.map(l, fn {k, _v} -> {k, Merkel.BinaryHashTree.hash(k)} end)
+iex> Enum.map(l, fn {k, _v} -> {k, Merkel.Crypto.hash(k)} end)
 
 [
   {"zebra", "676cb75018edccf10fce6f376f2124e02c3293fa3fe8f953c75386198c714514"},
@@ -47,23 +47,29 @@ iex> Enum.map(l, fn {k, _v} -> {k, Merkel.BinaryHashTree.hash(k)} end)
 ```elixir
 iex> m1 = Merkel.new(l)
 #Merkel.Tree<{5,
- {"f92f0f98d165457a4122bbe165aefa14928f45943f9b11880b51d720a1ad37c1", "giraffe",
+ {"f92f0f98d165457a4122bbe165aefa14928f45943f9b11880b51d720a1ad37c1", "<=gi..>",
   3,
-  {"bbe4..", "daisy", 2,
-   {"5ad2..", "anteater", 1, {"b0ce..", "anteater", 0, nil, nil},
-    {"4202..", "daisy", 0, nil, nil}}, {"6bb7..", "giraffe", 0, nil, nil}},
-  {"9b02..", "walrus", 1, {"9671..", "walrus", 0, nil, nil},
-   {"676c..", "zebra", 0, nil, nil}}}}>
+  {"bbe4..", "<=da..>", 2,
+   {"5ad2..", "<=an..>", 1, {"b0ce..", "anteater", 0}, {"4202..", "daisy", 0}},
+   {"6bb7..", "giraffe", 0}},
+  {"9b02..", "<=wa..>", 1, {"9671..", "walrus", 0}, {"676c..", "zebra", 0}}}}>
 ```
 
 ```elixir
-                  g
+# Notes:
+# double letter represents inner node search keys abbreviations,
+# whose left values are <= to the search key, and right values are >
+# g is the root node with search key giraffe at height 3
+# ant is abbreviated for anteater for space
+# leaves are at height 0
+
+                  gi              3
               /       \
-             d          w
+ 2          da         wa         1
           /    \     /     \
-        a   giraffe walrus zebra
-      /   \
-    ant   daisy
+ 1     an   giraffe walrus zebra  0
+      /  \
+ 0  ant   daisy
 ```
 
 * Lookup key
@@ -78,23 +84,21 @@ iex> Merkel.lookup(m1, "walrus")
 ```elixir
 iex> m2 = Merkel.insert(m1, {"aardvark", 999})
 #Merkel.Tree<{6,
- {"17b632f2e3ee68ef4bb880825c7d6bf3c674c9f0fb4d8f81a5654590e107f936", "giraffe",
+ {"17b632f2e3ee68ef4bb880825c7d6bf3c674c9f0fb4d8f81a5654590e107f936", "<=gi..>",
   3,
-  {"b1f2..", "anteater", 2,
-   {"2fc5..", "aardvark", 1, {"cf9c..", "aardvark", 0, nil, nil},
-    {"b0ce..", "anteater", 0, nil, nil}},
-   {"92af..", "daisy", 1, {"4202..", "daisy", 0, nil, nil},
-    {"6bb7..", "giraffe", 0, nil, nil}}},
-  {"9b02..", "walrus", 1, {"9671..", "walrus", 0, nil, nil},
-   {"676c..", "zebra", 0, nil, nil}}}}>
+  {"b1f2..", "<=an..>", 2,
+   {"2fc5..", "<=aa..>", 1, {"cf9c..", "aardvark", 0},
+    {"b0ce..", "anteater", 0}},
+   {"92af..", "<=da..>", 1, {"4202..", "daisy", 0}, {"6bb7..", "giraffe", 0}}},
+  {"9b02..", "<=wa..>", 1, {"9671..", "walrus", 0}, {"676c..", "zebra", 0}}}}>
 ```
 
 ```elixir
-                 g
+                 gi
              /        \
-            a           w
+            an          wa
           /   \       /     \
-       aa       d  walrus zebra
+       aa      da  walrus zebra
       / \     /   \
 aardvark ant daisy giraffe
 ```
@@ -102,24 +106,22 @@ aardvark ant daisy giraffe
 ```elixir
 iex> m3 = Merkel.insert(m2, {"elephant", "He's big"})
 #Merkel.Tree<{7,
- {"af4b1fc2c7a9189aad3b4b60ee8d5235c7df262264e77ce62622f32725eb0424", "daisy",
+ {"af4b1fc2c7a9189aad3b4b60ee8d5235c7df262264e77ce62622f32725eb0424", "<=da..>",
   3,
-  {"1779..", "anteater", 2,
-   {"2fc5..", "aardvark", 1, {"cf9c..", "aardvark", 0, nil, nil},
-    {"b0ce..", "anteater", 0, nil, nil}}, {"4202..", "daisy", 0, nil, nil}},
-  {"add5..", "giraffe", 2,
-   {"3b00..", "elephant", 1, {"cd08..", "elephant", 0, nil, nil},
-    {"6bb7..", "giraffe", 0, nil, nil}},
-   {"9b02..", "walrus", 1, {"9671..", "walrus", 0, nil, nil},
-    {"676c..", "zebra", 0, nil, nil}}}}}>
+  {"1779..", "<=an..>", 2,
+   {"2fc5..", "<=aa..>", 1, {"cf9c..", "aardvark", 0},
+    {"b0ce..", "anteater", 0}}, {"4202..", "daisy", 0}},
+  {"add5..", "<=gi..>", 2,
+   {"3b00..", "<=el..>", 1, {"cd08..", "elephant", 0}, {"6bb7..", "giraffe", 0}},
+   {"9b02..", "<=wa..>", 1, {"9671..", "walrus", 0}, {"676c..", "zebra", 0}}}}}>
 ```
 
 ```elixir
-                   d
+                  da
               /         \
-            a             g
+            an            gi
           /   \        /      \
-       aa     daisy   e          w
+       aa     daisy  el         wa
       / \           /  \        / \
 aardvark ant elephant giraffe walr zebra
 ```
@@ -128,24 +130,24 @@ aardvark ant elephant giraffe walr zebra
 
 ```elixir
 iex> {:ok, m4} = Merkel.delete(m3, "daisy")
-#Merkel.Tree<{6,
+{:ok,
+ #Merkel.Tree<{6,
   {"9820eab565a08738588256687c806fa2df46b094f2eb8565568d573447361c0a",
-   "anteater", 3,
-   {"2fc5..", "aardvark", 1, {"cf9c..", "aardvark", 0, nil, nil},
-    {"b0ce..", "anteater", 0, nil, nil}},
-   {"add5..", "giraffe", 2,
-    {"3b00..", "elephant", 1, {"cd08..", "elephant", 0, nil, nil},
-     {"6bb7..", "giraffe", 0, nil, nil}},
-    {"9b02..", "walrus", 1, {"9671..", "walrus", 0, nil, nil},
-     {"676c..", "zebra", 0, nil, nil}}}}}>
+   "<=an..>", 3,
+   {"2fc5..", "<=aa..>", 1, {"cf9c..", "aardvark", 0},
+    {"b0ce..", "anteater", 0}},
+   {"add5..", "<=gi..>", 2,
+    {"3b00..", "<=el..>", 1, {"cd08..", "elephant", 0},
+     {"6bb7..", "giraffe", 0}},
+    {"9b02..", "<=wa..>", 1, {"9671..", "walrus", 0}, {"676c..", "zebra", 0}}}}}>}
 ```
 
 ```elixir
-                   a
+                   an
               /         \
-            aa             g
+            aa            gi
           /   \        /      \
-  aardvark   ant      e          w
+  aardvark  anteater el         wa
                     /  \        / \
              elephant giraffe walr zebra
 ```
@@ -155,24 +157,23 @@ iex> {:ok, m4} = Merkel.delete(m3, "daisy")
 ```elixir
 iex> m5 = Merkel.insert(m4, {"penguin", :waddle})
 #Merkel.Tree<{7,
- {"e79f6fa607ad5d0a8e93a8ba759b266d52a71471222f11fe1ab07ee89ef9f4a4", "giraffe",
+ {"e79f6fa607ad5d0a8e93a8ba759b266d52a71471222f11fe1ab07ee89ef9f4a4", "<=gi..>",
   3,
-  {"3c2f..", "anteater", 2,
-   {"2fc5..", "aardvark", 1, {"cf9c..", "aardvark", 0, nil, nil},
-    {"b0ce..", "anteater", 0, nil, nil}},
-   {"3b00..", "elephant", 1, {"cd08..", "elephant", 0, nil, nil},
-    {"6bb7..", "giraffe", 0, nil, nil}}},
-  {"0d77..", "walrus", 2,
-   {"b881..", "penguin", 1, {"0a43..", "penguin", 0, nil, nil},
-    {"9671..", "walrus", 0, nil, nil}}, {"676c..", "zebra", 0, nil, nil}}}}>
+  {"3c2f..", "<=an..>", 2,
+   {"2fc5..", "<=aa..>", 1, {"cf9c..", "aardvark", 0},
+    {"b0ce..", "anteater", 0}},
+   {"3b00..", "<=el..>", 1, {"cd08..", "elephant", 0}, {"6bb7..", "giraffe", 0}}},
+  {"0d77..", "<=wa..>", 2,
+   {"b881..", "<=pe..>", 1, {"0a43..", "penguin", 0}, {"9671..", "walrus", 0}},
+   {"676c..", "zebra", 0}}}}>
 ```
 
 ```elixir
-                       g
+                      gi
               /               \
-            a                     w
+            an                    wa
           /   \                /      \
-       aa       e             p          zebra
+       aa       el            pe      zebra
       / \      / \           /  \       
 aardvark ant elep giraffe  penguin walrus
 ```
@@ -204,12 +205,12 @@ iex> proof = Merkel.audit(m6, "elephant")
 ==== denotes key
 ---- denotes audit hashes
 
-                        g
+                        gi
                 /               \
-             a                     w (0d77..)
+             an                    wa (0d77..)
                                   -----
           /     \                /      \
-(2fc5..) aa       e             p          zebra
+(2fc5..) aa      el             pe      zebra
         ----
        /  \      / \           /  \       
  aardvark ant elep giraffe  penguin walrus
@@ -232,4 +233,13 @@ true
 # Override in config.exs
 # Options are: :md5, :ripemd160, :sha, :sha224, :sha256, :sha384, :sha512
 config :merkel, hash_algorithm: :sha384
+```
+
+* Configure the hash apply to override the default :single (if necessary)
+
+```elixir
+# Override in config.exs
+# Options are: :single, :double
+# E.g. Bitcoin does a double :sha256 hash, meaning it hashes twice
+config :merkel, hash_apply: :double             
 ```

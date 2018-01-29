@@ -11,24 +11,40 @@ defmodule Merkel.BinaryNode do
   
   @type t :: %__MODULE__{}
 
-  @display_first_n_bytes 4
+  @display_skey_first_n_bytes 2
+  @display_hash_first_n_bytes 4
 
-  @doc "Provides dump of node info to be used in Inspect protocol implementation"
-  @spec info(t) :: tuple
-  def info(%Node{key_hash: nil}), do: {nil}
-  def info(%Node{} = node) do
-    {node.key_hash, node.search_key, node.height, node.left, node.right}
+  @doc "Provides dump of node info for root node"
+  @spec root_info(t) :: tuple
+  def root_info(%Node{} = node) do
+    <<search_head :: binary-size(@display_skey_first_n_bytes)>> <> _rest = node.search_key
+
+    {node.key_hash, "<=#{search_head}..>", node.height, node.left, node.right}
   end
 
-  @doc "Provides truncated dump of node info to be used in Inspect protocol implementation"
-  @spec trunc_info(t) :: tuple
-  def trunc_info(%Node{key_hash: nil}), do: {nil}
-  def trunc_info(%Node{key_hash: hash} = node) when is_binary(hash) do 
+
+  @doc "Provides node info to be used in Inspect protocol implementation"
+  @spec info(t) :: tuple
+  def info(%Node{key_hash: nil}), do: {nil}
+
+  # Inner node
+  def info(%Node{key_hash: hash, left: l, right: r} = node)
+  when is_binary(hash) and not(is_nil(l)) and not(is_nil(r)) do 
+
+    # Truncate the hash so it's easier to read as well as the search key
+    <<hash_head :: binary-size(@display_hash_first_n_bytes)>> <> _rest = hash
+    <<search_head :: binary-size(@display_skey_first_n_bytes)>> <> _rest = node.search_key
+
+    {"#{hash_head}..", "<=#{search_head}..>", node.height, node.left, node.right}
+  end
+
+  # Leaf node
+  def info(%Node{key_hash: hash, left: nil, right: nil} = node) when is_binary(hash) do 
 
     # Truncate the hash so it's easier to read
-    <<head :: binary-size(@display_first_n_bytes)>> <> _rest = hash
+    <<hash_head :: binary-size(@display_hash_first_n_bytes)>> <> _rest = hash
 
-    {"#{head}..", node.search_key, node.height, node.left, node.right}
+    {"#{hash_head}..", node.search_key, node.height}
   end
   
   
@@ -37,7 +53,7 @@ defmodule Merkel.BinaryNode do
     import Inspect.Algebra
     
     def inspect(t, opts) do
-      info = Inspect.Tuple.inspect(Node.trunc_info(t), opts)
+      info = Inspect.Tuple.inspect(Node.info(t), opts)
       concat ["", info, ""]
     end
   end

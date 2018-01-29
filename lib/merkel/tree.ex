@@ -7,12 +7,14 @@ defmodule Merkel.BinaryHashTree do
   Given an initial list of k-v pairs constructs an initial balanced
   tree without any initial rotations or initial rehashings
   """
+
+  import Merkel.Crypto
   
+  alias Merkel.AVL
   alias Merkel.BinaryHashTree, as: Tree
   alias Merkel.BinaryNode, as: Node
-  alias Merkel.AVL, as: AVL
-  
-  
+
+
   defstruct size: nil, root: nil
   
   @type t :: %__MODULE__{}
@@ -21,12 +23,7 @@ defmodule Merkel.BinaryHashTree do
 
   @type pair :: {key, value}
 
-
-  @default_hash :sha256
-  @hash_type Application.get_env(:merkel, :hash_algorithm)
-
   @display_tree_size_limit 64
-  @hash_algorithms [:md5, :ripemd160, :sha, :sha224, :sha256, :sha384, :sha512]
 
   
   @doc """
@@ -109,7 +106,6 @@ defmodule Merkel.BinaryHashTree do
 
   end
 
-
   ###################
   # PUBLIC HELPERS #
   ###################
@@ -120,21 +116,6 @@ defmodule Merkel.BinaryHashTree do
   def tree_hash(%Tree{root: nil}), do: nil
   def tree_hash(%Tree{root: root}), do: root.key_hash 
 
-  
-  @spec hash(key) :: String.t
-  def hash(str, type \\ @hash_type) do
-
-    case type do
-      t when t in @hash_algorithms -> 
-        :crypto.hash(t, str) |> Base.encode16(case: :lower)
-      _ -> # default case
-        :crypto.hash(@default_hash, str) |> Base.encode16(case: :lower)
-    end
-  end
-
-  @spec hash_concat(key | Node.t, key | Node.t) :: String.t
-  def hash_concat(lh, rh) when is_binary(lh) and is_binary(rh), do: hash(lh <> rh)
-  def hash_concat(%Node{} = l, %Node{} = r), do: hash(l.key_hash <> r.key_hash)
 
 
   ###################
@@ -320,6 +301,7 @@ defmodule Merkel.BinaryHashTree do
   # Helpers to retrieve key list
 
   # Base case nil node
+  @spec do_keys(nil | Node.t, list) :: list
   defp do_keys(nil, keys_acc), do: keys_acc
 
   # Leaf case, return key
@@ -419,7 +401,7 @@ defmodule Merkel.BinaryHashTree do
   def info(%Tree{size: 0, root: nil}), do: {0, nil}
   def info(%Tree{size: size, root: r} = tree) when size > 0 do
     case size <= @display_tree_size_limit do
-      true -> {tree.size, Node.info(r)} # Ensures root hash is fully visible
+      true -> {tree.size, Node.root_info(r)} # Ensures root hash is fully visible
       false -> {tree.size, {r.key_hash, r.height, "...", "..."}}
     end
   end
