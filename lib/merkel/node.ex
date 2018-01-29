@@ -28,7 +28,7 @@ defmodule Merkel.BinaryNode do
     # Truncate the hash so it's easier to read
     <<head :: binary-size(@display_first_n_bytes)>> <> _rest = hash
 
-    {"#{head}...", node.search_key, node.height, node.left, node.right}
+    {"#{head}..", node.search_key, node.height, node.left, node.right}
   end
   
   

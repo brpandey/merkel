@@ -49,11 +49,11 @@ iex> m1 = Merkel.new(l)
 #Merkel.Tree<{5,
  {"f92f0f98d165457a4122bbe165aefa14928f45943f9b11880b51d720a1ad37c1", "giraffe",
   3,
-  {"bbe4...", "daisy", 2,
-   {"5ad2...", "anteater", 1, {"b0ce...", "anteater", 0, nil, nil},
-    {"4202...", "daisy", 0, nil, nil}}, {"6bb7...", "giraffe", 0, nil, nil}},
-  {"9b02...", "walrus", 1, {"9671...", "walrus", 0, nil, nil},
-   {"676c...", "zebra", 0, nil, nil}}}}>
+  {"bbe4..", "daisy", 2,
+   {"5ad2..", "anteater", 1, {"b0ce..", "anteater", 0, nil, nil},
+    {"4202..", "daisy", 0, nil, nil}}, {"6bb7..", "giraffe", 0, nil, nil}},
+  {"9b02..", "walrus", 1, {"9671..", "walrus", 0, nil, nil},
+   {"676c..", "zebra", 0, nil, nil}}}}>
 ```
 
 ```elixir
@@ -80,13 +80,13 @@ iex> m2 = Merkel.insert(m1, {"aardvark", 999})
 #Merkel.Tree<{6,
  {"17b632f2e3ee68ef4bb880825c7d6bf3c674c9f0fb4d8f81a5654590e107f936", "giraffe",
   3,
-  {"b1f2...", "anteater", 2,
-   {"2fc5...", "aardvark", 1, {"cf9c...", "aardvark", 0, nil, nil},
-    {"b0ce...", "anteater", 0, nil, nil}},
-   {"92af...", "daisy", 1, {"4202...", "daisy", 0, nil, nil},
-    {"6bb7...", "giraffe", 0, nil, nil}}},
-  {"9b02...", "walrus", 1, {"9671...", "walrus", 0, nil, nil},
-   {"676c...", "zebra", 0, nil, nil}}}}>
+  {"b1f2..", "anteater", 2,
+   {"2fc5..", "aardvark", 1, {"cf9c..", "aardvark", 0, nil, nil},
+    {"b0ce..", "anteater", 0, nil, nil}},
+   {"92af..", "daisy", 1, {"4202..", "daisy", 0, nil, nil},
+    {"6bb7..", "giraffe", 0, nil, nil}}},
+  {"9b02..", "walrus", 1, {"9671..", "walrus", 0, nil, nil},
+   {"676c..", "zebra", 0, nil, nil}}}}>
 ```
 
 ```elixir
@@ -104,14 +104,14 @@ iex> m3 = Merkel.insert(m2, {"elephant", "He's big"})
 #Merkel.Tree<{7,
  {"af4b1fc2c7a9189aad3b4b60ee8d5235c7df262264e77ce62622f32725eb0424", "daisy",
   3,
-  {"1779...", "anteater", 2,
-   {"2fc5...", "aardvark", 1, {"cf9c...", "aardvark", 0, nil, nil},
-    {"b0ce...", "anteater", 0, nil, nil}}, {"4202...", "daisy", 0, nil, nil}},
-  {"add5...", "giraffe", 2,
-   {"3b00...", "elephant", 1, {"cd08...", "elephant", 0, nil, nil},
-    {"6bb7...", "giraffe", 0, nil, nil}},
-   {"9b02...", "walrus", 1, {"9671...", "walrus", 0, nil, nil},
-    {"676c...", "zebra", 0, nil, nil}}}}}>
+  {"1779..", "anteater", 2,
+   {"2fc5..", "aardvark", 1, {"cf9c..", "aardvark", 0, nil, nil},
+    {"b0ce..", "anteater", 0, nil, nil}}, {"4202..", "daisy", 0, nil, nil}},
+  {"add5..", "giraffe", 2,
+   {"3b00..", "elephant", 1, {"cd08..", "elephant", 0, nil, nil},
+    {"6bb7..", "giraffe", 0, nil, nil}},
+   {"9b02..", "walrus", 1, {"9671..", "walrus", 0, nil, nil},
+    {"676c..", "zebra", 0, nil, nil}}}}}>
 ```
 
 ```elixir
@@ -131,13 +131,13 @@ iex> {:ok, m4} = Merkel.delete(m3, "daisy")
 #Merkel.Tree<{6,
   {"9820eab565a08738588256687c806fa2df46b094f2eb8565568d573447361c0a",
    "anteater", 3,
-   {"2fc5...", "aardvark", 1, {"cf9c...", "aardvark", 0, nil, nil},
-    {"b0ce...", "anteater", 0, nil, nil}},
-   {"add5...", "giraffe", 2,
-    {"3b00...", "elephant", 1, {"cd08...", "elephant", 0, nil, nil},
-     {"6bb7...", "giraffe", 0, nil, nil}},
-    {"9b02...", "walrus", 1, {"9671...", "walrus", 0, nil, nil},
-     {"676c...", "zebra", 0, nil, nil}}}}}>
+   {"2fc5..", "aardvark", 1, {"cf9c..", "aardvark", 0, nil, nil},
+    {"b0ce..", "anteater", 0, nil, nil}},
+   {"add5..", "giraffe", 2,
+    {"3b00..", "elephant", 1, {"cd08..", "elephant", 0, nil, nil},
+     {"6bb7..", "giraffe", 0, nil, nil}},
+    {"9b02..", "walrus", 1, {"9671..", "walrus", 0, nil, nil},
+     {"676c..", "zebra", 0, nil, nil}}}}}>
 ```
 
 ```elixir
@@ -157,14 +157,14 @@ iex> m5 = Merkel.insert(m4, {"penguin", :waddle})
 #Merkel.Tree<{7,
  {"e79f6fa607ad5d0a8e93a8ba759b266d52a71471222f11fe1ab07ee89ef9f4a4", "giraffe",
   3,
-  {"3c2f...", "anteater", 2,
-   {"2fc5...", "aardvark", 1, {"cf9c...", "aardvark", 0, nil, nil},
-    {"b0ce...", "anteater", 0, nil, nil}},
-   {"3b00...", "elephant", 1, {"cd08...", "elephant", 0, nil, nil},
-    {"6bb7...", "giraffe", 0, nil, nil}}},
-  {"0d77...", "walrus", 2,
-   {"b881...", "penguin", 1, {"0a43...", "penguin", 0, nil, nil},
-    {"9671...", "walrus", 0, nil, nil}}, {"676c...", "zebra", 0, nil, nil}}}}>
+  {"3c2f..", "anteater", 2,
+   {"2fc5..", "aardvark", 1, {"cf9c..", "aardvark", 0, nil, nil},
+    {"b0ce..", "anteater", 0, nil, nil}},
+   {"3b00..", "elephant", 1, {"cd08..", "elephant", 0, nil, nil},
+    {"6bb7..", "giraffe", 0, nil, nil}}},
+  {"0d77..", "walrus", 2,
+   {"b881..", "penguin", 1, {"0a43..", "penguin", 0, nil, nil},
+    {"9671..", "walrus", 0, nil, nil}}, {"676c..", "zebra", 0, nil, nil}}}}>
 ```
 
 ```elixir
@@ -181,7 +181,7 @@ aardvark ant elep giraffe  penguin walrus
 
 ```elixir
 iex> m6 = Merkel.insert(m5, {"walrus", {"eats too many fish"}})
-...(same as above)...
+..(same as above)..
 iex> Merkel.lookup(m6, "walrus")
 {:ok, {"eats too many fish"}}
 ```
@@ -201,16 +201,16 @@ iex> proof = Merkel.audit(m6, "elephant")
 ==== denotes key
 ---- denotes audit hashes
 
-                         g
+                        g
                 /               \
              a                     w (0d77..)
                                   -----
           /     \                /      \
 (2fc5..) aa       e             p          zebra
-       ----
+        ----
        /  \      / \           /  \       
  aardvark ant elep giraffe  penguin walrus
-             ==== -------
+              ==== -------
                    (6bb7..)
 ```
 
