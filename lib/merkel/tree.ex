@@ -33,7 +33,7 @@ defmodule Merkel.BinaryHashTree do
   Create balanced tree given a list of {k,v} pairs or create empty tree
   """
   @spec create( none | list(pair)) :: t | no_return 
-  def create(), do: %Tree{size: 0}
+  def create(), do: %Tree{size: 0, root: nil}
   def create([]), do: raise "List can not be empty"
   def create([{k, _v} | _tail] = list) when is_binary(k) do
     # Sort the list by the 0th element of each tuple -> the key
