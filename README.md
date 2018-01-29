@@ -2,27 +2,36 @@ Merkel
 ==========
 ![Logo](https://raw.githubusercontent.com/brpandey/merkel/master/priv/images/merkel.png)
 
-Implements a balanced, merkle binary hash tree. [Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree) [Bitcoin](http://chimera.labs.oreilly.com/books/1234000001802/ch07.html#merkle_trees)
+Implements a balanced, merkle binary hash tree. [Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree) [Bitcoin](http://chimera.labs.oreilly.com/books/1234000001802/ch07.html#merkle_trees) [Ethereum](https://github.com/ethereum/wiki/wiki/White-Paper#merkle-trees)
 
 Merkle trees are a beautiful data structure for summarizing and verifying data integrity.
 They are named in honor of distinguished computer scientist Ralph Merkle. This library is named
-with a slight twist (le to el) to salute Angela Merkel's push for algorithmic transparency.
+with a slight twist (le to el :arrows_clockwise:) to salute Angela Merkel's push for algorithmic transparency.
 
-> Merkel Urges Transparency For Internet Giants’ Algorithms
->
 > “I am of the opinion that algorithms must be made more transparent so that one 
 > can inform oneself as an interested citizen about questions like, ‘What influences my 
 > behaviour on the internet and that of others?’” 
 >
 > “These algorithms — when they are not transparent — can lead to a distortion of our perception. 
-> They narrow our breadth of information.”
->> 
-> [Source](http://www.newsmediauk.org/Latest/merkel-calls-for-transparency-of-internet-giants-algorithms)
+> They narrow our breadth of information.” [Source](http://www.newsmediauk.org/Latest/merkel-calls-for-transparency-of-internet-giants-algorithms)
+
+> The purpose of the Merkle tree [in Bitcoin] is to allow the data in a block to be delivered piecemeal: 
+> a node can download only the header of a block from one source, the small part of the tree relevant to them 
+> from another source, and still be aassured that all of the data is correct. The reason why this works is that 
+> hashes propagate upward: if a malicious user attempts to swap in a fake transaction into the bottom of a 
+> Merkle tree, this change will cause a change in the node above, and then a change in the node above that, 
+> finally changing the root of the tree and therefore the hash of the block, causing the protocol to 
+> register it as a completely different block (almost certainly with an invalid proof of work).
+> - Ethereum Wiki
 
 ## Noteworthy
 
 * Uses AVL rotations to keep the tree balanced
-* Creation from list creates a balanced tree without any initial rotations or rehashings
+* Creation from list creates a balanced tree without any initial rotations or rehashings (RECOMMENDED)
+* Support key value storage, retrieval, deletion
+* Supports these hash algorithms: md5, ripemd160, sha, sha224, sha256, sha384, sha512 [Erlang](http://erlang.org/doc/man/crypto.html#hash-2)
+* Supports double hashing
+* Provides proof of existence in verifiable format
 
 ## Usage
 
@@ -59,11 +68,11 @@ iex> m1 = Merkel.new(l)
 # Notes:
 # double letter represents inner node search keys abbreviations,
 # whose left values are <= to the search key, and right values are >
-# g is the root node with search key giraffe at height 3
+# gi is the root node with search key giraffe at height 3, with merkle hash: f92f..
 # ant is abbreviated for anteater for space
 # leaves are at height 0
 
-                  gi              3
+ 3                gi              3
               /       \
  2          da         wa         1
           /    \     /     \
@@ -243,3 +252,14 @@ config :merkel, hash_algorithm: :sha384
 # E.g. Bitcoin does a double :sha256 hash, meaning it hashes twice
 config :merkel, hash_apply: :double             
 ```
+
+## Future
+
+* Parallel insertions / deletions? :)
+
+
+## Thanks!
+
+Thanks for the great Erlang/Elixir open source merkle tree related projects for the inspiration
+
+Bibek Pandey
