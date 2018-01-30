@@ -27,13 +27,13 @@ And
 
 ## Noteworthy
 
-* Uses AVL rotations to keep the tree balanced
+* Uses AVL rotations :arrows_clockwise: to keep the tree balanced (relying on inner search keys for order property)
 * Creation from list creates a balanced tree without any initial rotations or rehashings (RECOMMENDED)
 * Support key value storage, retrieval, deletion
-* Supports these hash algorithms: md5, ripemd160, sha, sha224, sha256, sha384, sha512 [Erlang](http://erlang.org/doc/man/crypto.html#hash-2)
+* Supports these hash algorithms: md5, ripemd160, sha, sha224, sha256, sha384, sha512 - See [crypto](http://erlang.org/doc/man/crypto.html#hash-2)
 * Supports double hashing
 * Provides proof of existence in verifiable format
-* Keys are binary, and values are any type - but use your discretion if you want the tree to be compact
+* Keys are binary, and values are any type (use your discretion if you want the tree to be compact)
 
 ## Usage
 
