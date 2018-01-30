@@ -55,6 +55,7 @@ iex> Enum.map(l, fn {k, _v} -> {k, Merkel.Crypto.hash(k)} end)
 ]
 ```
 
+
 * Create new MHT
 
 ```elixir
@@ -85,6 +86,7 @@ iex> m1 = Merkel.new(l)
       /  \
  0  ant   daisy
 ```
+
 
 * Create new MHT with binary keys that aren't printable strings
 
@@ -120,6 +122,7 @@ iex> Merkel.new(l)
 iex> Merkel.lookup(m1, "walrus")
 {:ok, 49}
 ```
+
 
 * Insert key value pairs (and notice rotations)
 
@@ -168,6 +171,7 @@ iex> m3 = Merkel.insert(m2, {"elephant", "He's big"})
 aardvark ant elephant giraffe walr zebra
 ```
 
+
 * Delete key
 
 ```elixir
@@ -193,6 +197,7 @@ iex> {:ok, m4} = Merkel.delete(m3, "daisy")
                     /  \        / \
              elephant giraffe walr zebra
 ```
+
 
 * Insert key value
 
@@ -220,6 +225,7 @@ iex> m5 = Merkel.insert(m4, {"penguin", :waddle})
 aardvark ant elep giraffe  penguin walrus
 ```
 
+
 * Update value for key
 * Get all keys
 
@@ -231,6 +237,7 @@ iex> Merkel.lookup(m6, "walrus")
 iex> Merkel.keys(m6)
 ["aardvark", "anteater", "elephant", "giraffe", "penguin", "walrus", "zebra"]
 ```
+
 
 * Create audit proof
 
@@ -260,6 +267,7 @@ iex> proof = Merkel.audit(m6, "elephant")
                    (6bb7..)
 ```
 
+
 * Verify audit proof
 
 ```elixir
@@ -267,7 +275,9 @@ iex> Merkel.verify(proof, Merkel.tree_hash(m))
 true
 ```
 
+
 ## Configure
+
 
 * Configure the hash algorithm to override the default :sha256 (if necessary)
 
@@ -276,6 +286,7 @@ true
 # Options are: :md5, :ripemd160, :sha, :sha224, :sha256, :sha384, :sha512
 config :merkel, hash_algorithm: :sha384
 ```
+
 
 * Configure the hash apply to override the default :single (if necessary)
 
@@ -286,6 +297,7 @@ config :merkel, hash_algorithm: :sha384
 config :merkel, hash_apply: :double             
 ```
 
+
 ## Future
 
 * Parallel insertions / deletions? :)
@@ -293,6 +305,7 @@ config :merkel, hash_apply: :double
 
 ## Thanks!
 
-Thanks for the great Erlang/Elixir open source merkle tree related projects for the inspiration
+Thanks for the great Erlang/Elixir/Go/Clojure/Java open source merkle tree 
+related projects for the inspiration!
 
 Bibek Pandey
