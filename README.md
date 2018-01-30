@@ -29,7 +29,7 @@ And
 
 * Uses AVL rotations :arrows_clockwise: to keep the tree balanced (relying on inner search keys for order property)
 * Creation from list creates a balanced tree without any initial rotations or rehashings (RECOMMENDED)
-* Support key value storage, retrieval, deletion
+* Supports key value storage, retrieval, and deletion
 * Supports these hash algorithms: md5, ripemd160, sha, sha224, sha256, sha384, sha512 - See [crypto](http://erlang.org/doc/man/crypto.html#hash-2)
 * Supports double hashing
 * Provides proof of existence in verifiable format
@@ -37,7 +37,7 @@ And
 
 ## Usage
 
-* Note: Since keys are binaries we will use mostly String keys for clarity
+* Note: Since keys are binaries we will use mostly String keys for visual clarity
 
 * Helpful background
 
@@ -114,7 +114,7 @@ iex> Merkel.new(l)
 ```
 
 
-* Lookup key
+* Lookup key value
 
 ```elixir
 iex> Merkel.lookup(m1, "walrus")

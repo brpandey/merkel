@@ -41,18 +41,7 @@ defmodule Merkel.BinaryHashTree do
   @spec create( none | list(pair)) :: t | no_return 
   def create(), do: %Tree{size: 0, root: nil}
   def create([]), do: raise "List can not be empty"
-  def create([{k, _v} | _tail] = list) when is_binary(k) do
-    # Sort the list by the 0th element of each tuple -> the key
-    list = List.keysort(list, 0) 
-    
-    size = Enum.count(list)
-    
-    # Once finished the sorted list is reduced into a tree
-    # signified by the tree root, with an empty consume list
-    {{root, _kacc}, []} = partition_build(list, size)
-    
-    %Tree{size: size, root: root}
-  end
+  def create([{k, _v} | _tail] = list) when is_binary(k), do: create_tree(list)
 
 
   @doc """
@@ -119,6 +108,23 @@ defmodule Merkel.BinaryHashTree do
   # PUBLIC HELPERS #
   ###################
 
+  # Public helper to create the tree with an option to specify and vary
+  # the heavier tree side when we don't have an equal number of nodes :)
+  @spec create_tree(list(pair), tuple) :: t
+  def create_tree([{k, _v} | _tail] = list, toggle_acc \\ {false, false})
+  when is_binary(k) do
+    # Sort the list by the 0th element of each tuple -> the key
+    list = List.keysort(list, 0) 
+    
+    size = Enum.count(list)
+    
+    # Once finished the sorted list is reduced into a tree
+    # signified by the tree root, with an empty consume list
+    {{root, _kacc}, [], _} = partition_build(list, size, toggle_acc)
+    
+    %Tree{size: size, root: root}
+  end
+
 
   # Public helper routine to get merkle tree (root) hash
   @spec tree_hash(nil | t) :: nil | String.t
@@ -140,11 +146,7 @@ defmodule Merkel.BinaryHashTree do
   
   # Helpers to create a balanced tree from a list of sorted k-v pairs using partitioning
   # Used on setup
-  
-  # Divide number into its whole rough halves e.g. for 5 its 3 and 2
-  @spec partition(non_neg_integer) :: {non_neg_integer, non_neg_integer}
-  defp partition(n) when is_integer(n), do: {n - Kernel.div(n, 2), Kernel.div(n, 2)} 
-  
+    
   # We are able to build the leaves first of the merkle tree and then the inner structure
   # since we are using postorder traversal (leaves first then inner nodes)
   
@@ -175,33 +177,64 @@ defmodule Merkel.BinaryHashTree do
   # we first create the leaf nodes, then when we have two leaf
   # nodes (l and r) we create the inner nodes.
 
-  @spec partition_build(list(pair), non_neg_integer) :: tuple
 
+  # Divide number into its whole rough halves e.g. for 5 its 3 and 2
+  # By default, the left subtree is the dominant side as it gets the larger number 
+  # (making it deeper)
+
+  # We override this by specifying which side we want the bigger number to be
+  # and if we want that to alternate or not if the halves differ in size
+  @spec partition(non_neg_integer, tuple) :: {non_neg_integer, non_neg_integer, tuple}
+  defp partition(n, {on_right, alternate} = toggle_acc)
+  when is_integer(n) and is_boolean(on_right) and is_boolean(alternate) do
+    sh = Kernel.div(n, 2) # smaller half
+    bh = n - sh # bigger half
+    
+    case sh != bh do
+      # we only toggle if the halves are different sizes
+      true -> 
+        cond do 
+          # Given the two choices we generate the four possible match cases
+          # a) 1 1 b) 1 0 c) 0 1 d) 0 0 
+          # Note we don't change alternate 
+          # We just toggle on_right depending on alternate
+          on_right && alternate -> {sh, bh, {not(on_right), alternate}}
+          on_right && not(alternate) -> {sh, bh, {on_right, alternate}}
+          not(on_right) && alternate -> {bh, sh, {not(on_right), alternate}}
+          not(on_right) && not(alternate) -> {bh, sh, {on_right, alternate}}
+        end
+      false -> {sh, bh, toggle_acc}
+    end
+  end
+
+
+  @spec partition_build(list(pair), non_neg_integer, tuple) :: tuple
+  
   # Base case, e.g. empty list
-  defp partition_build(list, 0) do
-    {nil, list}
+  defp partition_build(list, 0, t_acc) do
+    {nil, list, t_acc}
   end
   
   # Leaves case
   # From the diagram above the 1's are where the leaves go
-  defp partition_build([head | tail], 1) when is_tuple(head) do
-    {leaf_level(head), tail}
+  defp partition_build([head | tail], 1, t_acc) when is_tuple(head) do
+    {leaf_level(head), tail, t_acc}
   end
   
   # Inner nodes case (all the inner nodes are values that are > 1)
-  defp partition_build(list, size)
+  defp partition_build(list, size, toggle_acc)
   when size > 1 and is_list(list) and is_tuple(hd(list)) do
     
     # Divide the size into its integer rough halves e.g. for 5 its 3 and 2
-    {n1, n2} = partition(size)
+    {n1, n2, t_acc} = partition(size, toggle_acc)
     
     # Since it's postorder do left, then right followed by inner
-    {{left, l_acc}, shrunk} = partition_build(list, n1)
-    {{right, r_acc}, shrunk} = partition_build(shrunk, n2)
+    {{left, l_acc}, list, t_acc} = partition_build(list, n1, t_acc)
+    {{right, r_acc}, list, t_acc} = partition_build(list, n2, t_acc)
     
     inner = inner_level(left, right, {l_acc, r_acc})
     
-    {inner, shrunk}
+    {inner, list, t_acc}
   end
   
   
@@ -430,3 +463,4 @@ defmodule Merkel.BinaryHashTree do
   end
   
 end
+  
