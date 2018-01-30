@@ -33,8 +33,11 @@ And
 * Supports these hash algorithms: md5, ripemd160, sha, sha224, sha256, sha384, sha512 [Erlang](http://erlang.org/doc/man/crypto.html#hash-2)
 * Supports double hashing
 * Provides proof of existence in verifiable format
+* Keys are binary, and values are any type - but use your discretion if you want the tree to be compact
 
 ## Usage
+
+* Note: Since keys are binaries we will use mostly String keys for clarity
 
 * Helpful background
 
@@ -65,6 +68,7 @@ iex> m1 = Merkel.new(l)
   {"9b02..", "<=wa..>", 1, {"9671..", "walrus", 0}, {"676c..", "zebra", 0}}}}>
 ```
 
+
 ```elixir
 # Notes:
 # double letter represents inner node search keys abbreviations,
@@ -81,6 +85,34 @@ iex> m1 = Merkel.new(l)
       /  \
  0  ant   daisy
 ```
+
+* Create new MHT with binary keys that aren't printable strings
+
+```elixir
+iex> l = [{<<231,23, 11>>, 23}, {<<108,1>>, "932"}, {<<21, 11>>, 29}, 
+{"anteater" <> <<0>>, "12"}, {"walrus" <> <<0>>, 49}]
+iex> Merkel.new(l)
+#Merkel.Tree<{5,
+ {"dfa6c9257e371e7717047eec853604174816f92238cf04057a720aabff405897", 
+  <<108, 1>>, 3,
+  {"7eb5..", "<=an..>", 2,
+   {"eca4..", <<21, 11>>, 1, {"60c2..", <<21, 11>>, 0},
+    {"7931..", <<97, 110, 116, 101, 97, 116, 101, 114, 0>>, 0}},
+   {"a233..", <<108, 1>>, 0}},
+  {"9ccb..", "<=wa..>", 1, {"5122..", <<119, 97, 108, 114, 117, 115, 0>>, 0},
+   {"e93a..", <<231, 23, 11>>, 0}}}}>
+```
+
+```elixir
+ 3              <<108,1>>              
+              /           \
+ 2          an               wa         
+          /    \        /          \
+ 1   <<21,11> <<108,1>> <<119,97..> <<231,2..>
+      /     \
+ 0 <<21,11>  <<97, 110..>
+```
+
 
 * Lookup key
 

@@ -7,6 +7,8 @@ defmodule Merkel.AVL do
   alias Merkel.BinaryNode, as: Node
 
 
+  @type skey :: Merkel.BinaryHashTree.key
+
   ##############################################################################
   # AVL balance and rotation helpers
 
@@ -18,7 +20,7 @@ defmodule Merkel.AVL do
   Balances tree rooted at node n using avl rotations.
   Runs the update callback function for each node that is affected by rotations
   """
-  @spec balance(Node.t, String.t, function) :: Node.t
+  @spec balance(Node.t, skey, function) :: Node.t
   def balance(%Node{left: l, right: r} = node, search_key, fn_update)
   when is_binary(search_key) do
     

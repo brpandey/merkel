@@ -2,10 +2,19 @@ defmodule Merkel.BinaryHashTree do
   @moduledoc """
   Implements a merkle binary hash tree that is balanced using AVL rotations
   
-  Supports create, lookup, keys, insert, delete
+  Supports create, lookup, keys, insert, delete operations
   
   Given an initial list of k-v pairs constructs an initial balanced
   tree without any initial rotations or initial rehashings
+
+  Keys are binary, e.g. a utf8 encoded sequence of bytes (string) or just bytes
+  Values are any type but for compactness binary or numbers are preferred
+
+  Keys and values are only stored in the leaves
+  Inner nodes use the search_key value to determine order
+
+  Hashes of the keys are stored in the node key_hash field
+  Inner nodes store the concatenated hashes of their children in key_hash as well
   """
 
   import Merkel.Crypto
@@ -18,7 +27,7 @@ defmodule Merkel.BinaryHashTree do
   defstruct size: nil, root: nil
   
   @type t :: %__MODULE__{}
-  @type key :: String.t
+  @type key :: binary
   @type value :: any
 
   @type pair :: {key, value}
@@ -112,11 +121,14 @@ defmodule Merkel.BinaryHashTree do
 
 
   # Public helper routine to get merkle tree (root) hash
-  @spec tree_hash(t) :: nil | String.t
+  @spec tree_hash(nil | t) :: nil | String.t
+  def tree_hash(nil), do: nil
   def tree_hash(%Tree{root: nil}), do: nil
   def tree_hash(%Tree{root: root}), do: root.key_hash 
 
-
+  @spec size(nil | t) :: nil | non_neg_integer
+  def size(nil), do: nil
+  def size(%Tree{size: size}), do: size
 
   ###################
   # PRIVATE HELPERS #
@@ -253,7 +265,7 @@ defmodule Merkel.BinaryHashTree do
     %Node{key_hash: hash(k), search_key: k, key: k, value: v, height: 0} 
   end
   
-  @spec leaf_level(pair) :: {Node.t, String.t}
+  @spec leaf_level(pair) :: {Node.t, key}
   defp leaf_level({k,v}) when is_binary(k) do 
     # Along with the node we pass the largest key from the left subtree 
     # (since it's nil we use the key)
@@ -262,7 +274,7 @@ defmodule Merkel.BinaryHashTree do
   
   
   # Create inner node
-  @spec inner(Node.t, Node.t, String.t) :: Node.t
+  @spec inner(Node.t, Node.t, key) :: Node.t
   defp inner(%Node{} = l, %Node{} = r, s_key) when is_binary(s_key) do
     %Node{
       key_hash: hash_concat(l,r),

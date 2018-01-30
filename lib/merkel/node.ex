@@ -17,9 +17,10 @@ defmodule Merkel.BinaryNode do
   @doc "Provides dump of node info for root node"
   @spec root_info(t) :: tuple
   def root_info(%Node{} = node) do
-    <<search_head :: binary-size(@display_skey_first_n_bytes)>> <> _rest = node.search_key
 
-    {node.key_hash, "<=#{search_head}..>", node.height, node.left, node.right}
+    skey = trunc_search_key(node.search_key)
+
+    {node.key_hash, skey, node.height, node.left, node.right}
   end
 
 
@@ -33,9 +34,9 @@ defmodule Merkel.BinaryNode do
 
     # Truncate the hash so it's easier to read as well as the search key
     <<hash_head :: binary-size(@display_hash_first_n_bytes)>> <> _rest = hash
-    <<search_head :: binary-size(@display_skey_first_n_bytes)>> <> _rest = node.search_key
+    skey = trunc_search_key(node.search_key)
 
-    {"#{hash_head}..", "<=#{search_head}..>", node.height, node.left, node.right}
+    {"#{hash_head}..", skey, node.height, node.left, node.right}
   end
 
   # Leaf node
@@ -47,6 +48,15 @@ defmodule Merkel.BinaryNode do
     {"#{hash_head}..", node.search_key, node.height}
   end
   
+  def trunc_search_key(seq) when is_binary(seq) do
+    <<search_head :: binary-size(@display_skey_first_n_bytes)>> <> _rest = seq
+
+    # Only prepend and append patterns if we have a utf8 string
+    case String.printable?(search_head) do
+      true -> "<=#{search_head}..>"
+      false -> search_head
+    end
+  end
   
   # Allows users to inspect this module type in a controlled manner
   defimpl Inspect do

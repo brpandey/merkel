@@ -4,13 +4,9 @@ defmodule Merkel do
   alias Merkel.Audit
 
   # Merkle tree CRUD
-  @spec new(none | list(tuple)) :: Tree.t
-  
+  @spec new(none | list(tuple)) :: Tree.t  
   def new(), do: Tree.create()
   def new(list) when is_list(list), do: Tree.create(list)
-
-  @spec tree_hash(Tree.t) :: String.t
-  def tree_hash(%Tree{} = t), do: Tree.tree_hash(t)
   
   @spec lookup(Tree.t, Tree.key) :: tuple
   def lookup(%Tree{} = t, key) when is_binary(key), do: Tree.lookup(t, key)
@@ -33,4 +29,12 @@ defmodule Merkel do
   def verify(%Audit{} = proof, root_hash) when is_binary(root_hash) do
     Audit.verify(proof, root_hash)
   end
+
+
+  # Helpers
+  @spec tree_hash(Tree.t) :: String.t
+  def tree_hash(%Tree{} = t), do: Tree.tree_hash(t)
+
+  @spec size(Tree.t) :: non_neg_integer
+  def size(%Tree{} = t), do: Tree.size(t)
 end
