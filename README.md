@@ -2,7 +2,7 @@ Merkel
 ==========
 ![Logo](https://raw.githubusercontent.com/brpandey/merkel/master/priv/images/merkel.png)
 
-Implements a balanced, merkle binary hash tree. [Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree) [Bitcoin](http://chimera.labs.oreilly.com/books/1234000001802/ch07.html#merkle_trees) 
+Implements a balanced, merkle binary hash tree. [Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree) [Bitcoin](http://chimera.labs.oreilly.com/books/1234000001802/ch07.html#merkle_trees) [Ethereum](https://github.com/ethereum/wiki/wiki/White-Paper#merkle-trees)
 
 Merkle trees are a beautiful data structure for summarizing and verifying data integrity.
 They are named in honor of distinguished computer scientist Ralph Merkle. This library is named
@@ -14,16 +14,6 @@ with a slight twist (le to el :arrows_clockwise:) to salute Angela Merkel's push
 >
 > “These algorithms — when they are not transparent — can lead to a distortion of our perception. 
 > They narrow our breadth of information.” [Source](http://www.newsmediauk.org/Latest/merkel-calls-for-transparency-of-internet-giants-algorithms)
-
-And
-> "The purpose of the Merkle tree [in Bitcoin] is to allow the data in a block to be delivered piecemeal: 
-> a node can download only the header of a block from one source, the small part of the tree relevant to them 
-> from another source, and still be aassured that all of the data is correct. The reason why this works is that 
-> hashes propagate upward: if a malicious user attempts to swap in a fake transaction into the bottom of a 
-> Merkle tree, this change will cause a change in the node above, and then a change in the node above that, 
-> finally changing the root of the tree and therefore the hash of the block, causing the protocol to 
-> register it as a completely different block (almost certainly with an invalid proof of work)"
-> - [Ethereum](https://github.com/ethereum/wiki/wiki/White-Paper#merkle-trees)
 
 ## Noteworthy
 
@@ -240,6 +230,7 @@ iex> Merkel.keys(m6)
 
 
 * Create audit proof
+* Note: the audit path is in a special tuple form reflective of audit trail order
 
 ```elixir
 iex> proof = Merkel.audit(m6, "elephant")
@@ -301,7 +292,7 @@ config :merkel, hash_apply: :double
 ## Future
 
 * Parallel insertions / deletions? :)
-
+* Serialization format?
 
 ## Thanks!
 

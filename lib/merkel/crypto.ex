@@ -15,26 +15,26 @@ defmodule Merkel.Crypto do
   # Public helper routine to hash
   # Takes hash type with default being :sha256,
   # and hash apply whose default is :single
-  @spec hash(binary) :: String.t
-  def hash(str, type \\ @hash_type, apply \\ @hash_apply) when is_binary(str) do
+  @spec hash(binary, atom, atom) :: String.t
+  def hash(bin, type \\ @hash_type, apply \\ @hash_apply) when is_binary(bin) do
     # If not valid hash_algorithm or not provided use the default
     case type do
-      t when t in @hash_algorithms -> hash1(str, t, apply)
-      _ -> hash1(str, @default_hash, apply) # default case
+      t when t in @hash_algorithms -> hash1(bin, t, apply)
+      _ -> hash1(bin, @default_hash, apply) # default case
     end
   end
 
 
   # Public helper routine to hash with no arg defaults
   @spec hash1(binary, atom, atom) :: String.t
-  def hash1(str, type, apply)
-  when is_binary(str) and is_atom(type) and is_atom(apply) do
+  def hash1(bin, type, apply)
+  when is_binary(bin) and is_atom(type) and is_atom(apply) do
     case apply do
       :double ->
-        :crypto.hash(type, :crypto.hash(type, str)) 
+        :crypto.hash(type, :crypto.hash(type, bin)) 
         |> Base.encode16(case: :lower)
       _ -> # default is hash once
-        :crypto.hash(type, str) |> Base.encode16(case: :lower)
+        :crypto.hash(type, bin) |> Base.encode16(case: :lower)
     end
   end
 

@@ -1,4 +1,8 @@
 defmodule Merkel do
+  @moduledoc """
+  Essentially a driver module but allows for the 
+  decoupled addition of e.g. new tree types and/or other proof types.
+  """
 
   alias Merkel.BinaryHashTree, as: Tree
   alias Merkel.Audit

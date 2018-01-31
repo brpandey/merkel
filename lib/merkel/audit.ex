@@ -1,4 +1,27 @@
 defmodule Merkel.Audit do
+  @moduledoc """
+  Module facilitates audit proof creation given the candidate key
+  as well as providing verification of the proof.
+
+  The audit proof simply contains the candidate key and the audit path
+  in tuple form that eliminates any need to store an index or other overhead
+  to track key position.  The construction of the tuple encodes the proper
+  hash concatenation order.
+
+  "The purpose of the Merkle tree [in Bitcoin] is to allow the data in a block
+  to be delivered piecemeal: a node can download only the header of a block 
+  from one source, the small part of the tree relevant to them from another 
+  source, and still be assured that all of the data is correct. 
+
+  The reason why this works is that hashes propagate upward: if a malicious 
+  user attempts to swap in a fake transaction into the bottom of a Merkle tree, 
+  this change will cause a change in the node above, and then a change in the 
+  node above that, finally changing the root of the tree and therefore the hash 
+  of the block, causing the protocol to register it as a completely different block 
+  (almost certainly with an invalid proof of work)"
+
+  - Ethereum (https://github.com/ethereum/wiki/wiki/White-Paper#merkle-trees)
+  """
 
   import Merkel.Crypto
 
@@ -12,10 +35,11 @@ defmodule Merkel.Audit do
 
   @type t :: %__MODULE__{}
 
-  # Create audit proof
-  # This includes the set of sibling hashes in the path to the merkle root, 
-  # that will ensure verification
-
+  @doc """
+  Create audit proof
+  This includes the set of sibling hashes in the path to the merkle root, 
+  that will ensure verification
+  """
   @spec create(Tree.t, Tree.key) :: nil | t
   def create(%Tree{root: nil}, _key), do: nil
   def create(%Tree{root: %Node{} = root}, key) when is_binary(key) do
@@ -25,7 +49,7 @@ defmodule Merkel.Audit do
     %Audit{key: key, path: path}
   end
 
-  # Verify the audit key and path are authenticated as part of the merkle tree
+  @doc "Verify the candidate key and audit path are authenticated as part of the merkle tree"
   @spec verify(t, String.t) :: boolean
   def verify(%Audit{key: key, path: trail}, tree_hash) 
   when is_binary(key) and is_tuple(trail) and is_binary(tree_hash) do

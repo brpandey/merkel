@@ -29,6 +29,38 @@ defmodule Merkel.Helper do
   end
 
 
+  @doc """
+  Public helper to create the a balanced tree but with inner node branches alternating
+  in random ways.  Specifically if an inner node has a subtree with 3 children and another
+  subtree with 2 children, it is randomly determined if the left child will get the subtree
+  of 3 children and vice versa.  Point being it is not set that the left child will always get
+  the larger subtree.
+  """
+  @spec create_toggle_tree(list(pair)) :: tuple
+  def create_toggle_tree([{k, _v} | _tail] = list)
+  when is_binary(k) do
+    # Sort the list by the 0th element of each tuple -> the key
+    list = List.keysort(list, 0) 
+    
+    size = Enum.count(list)
+
+    # Streams are composable so each of these functions will be applied to each 
+    # value retrieved from the stream
+
+    # Returns a stream of boolean toggle values
+    toggle_stream = 
+      Stream.repeatedly(&:rand.uniform/0)     
+      |> Stream.map(fn x -> x * 2 end) 
+      |> Stream.map(fn x -> x >= 1 end)    
+
+    # Once finished the sorted list is reduced into a tree
+    # signified by the tree root, with an empty consume list
+    {{root, _kacc}, [], _} = partition_build(list, size, toggle_stream)
+    
+    {size, root}
+  end
+  
+
   ##############################################################################
   # Tree creation helpers
   
@@ -73,11 +105,13 @@ defmodule Merkel.Helper do
 
   # We override this by specifying which side we want the bigger number to be
   # and if we want that to alternate or not if the halves differ in size
+
   @spec partition(non_neg_integer, tuple) :: {non_neg_integer, non_neg_integer, tuple}
   defp partition(n, {on_right, alternate} = toggle_acc)
   when is_integer(n) and is_boolean(on_right) and is_boolean(alternate) do
-    sh = Kernel.div(n, 2) # smaller half
-    bh = n - sh # bigger half
+
+    # smaller and bigger half
+    {sh, bh} = do_partition(n)
     
     case sh != bh do
       # we only toggle if the halves are different sizes
@@ -96,8 +130,33 @@ defmodule Merkel.Helper do
     end
   end
 
+  # Divide number into its whole rough halves e.g. for 5 its 3 and 2
+  # Given the toggle stream passed in, we ask it where the larger numbered
+  # subtree goes, to the left or to the right?
 
-  @spec partition_build(list(pair), non_neg_integer, tuple) :: tuple
+  # Doing this randomly for larger trees creates diverse patterns
+
+  @spec partition(non_neg_integer, Enumerable.t) :: {non_neg_integer, non_neg_integer, tuple}
+  defp partition(n, toggle_acc) when is_integer(n) and not(is_nil(toggle_acc)) do
+
+    {sh, bh} = do_partition(n)
+    
+    case sh != bh do
+      # we only toggle if the halves are different sizes
+      true -> 
+        case Enum.take(toggle_acc, 1) |> List.first do
+          true -> {sh, bh, toggle_acc}
+          false -> {bh, sh, toggle_acc}
+        end
+
+      false -> {sh, bh, toggle_acc}
+    end
+  end
+
+  # Given a number n, it is returned into its halves: the smaller and larger half if odd
+  defp do_partition(n) when n > 1, do: {Kernel.div(n,2), n - Kernel.div(n,2)}
+
+  @spec partition_build(list(pair), non_neg_integer, tuple | Enumerable.t) :: tuple
   
   # Base case, e.g. empty list
   defp partition_build(list, 0, t_acc) do
