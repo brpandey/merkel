@@ -42,15 +42,20 @@ defmodule Merkel.Audit do
   """
   @spec create(Tree.t, Tree.key) :: nil | t
   def create(%Tree{root: nil}, _key), do: nil
-  def create(%Tree{root: %Node{} = root}, key) when is_binary(key) do
+  def create(%Tree{root: %Node{} = root} = t, key) when is_binary(key) do
 
-    path = traverse(root, key, [], [])
+    case Tree.lookup(t, key) do
+      {:ok, _} -> 
+        path = traverse(root, key, [], [])
+        %Audit{key: key, path: path}
+      {:error, _} -> %Audit{key: key, path: nil}
+    end
 
-    %Audit{key: key, path: path}
   end
 
   @doc "Verify the candidate key and audit path are authenticated as part of the merkle tree"
   @spec verify(t, String.t) :: boolean
+  def verify(%Audit{key: _, path: nil}, _th), do: false
   def verify(%Audit{key: key, path: trail}, tree_hash) 
   when is_binary(key) and is_tuple(trail) and is_binary(tree_hash) do
 
