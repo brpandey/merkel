@@ -2,7 +2,7 @@ Merkel
 ==========
 ![Logo](https://raw.githubusercontent.com/brpandey/merkel/master/priv/images/merkel.png)
 
-Implements a balanced, merkle binary hash tree. [Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree) [Bitcoin](http://chimera.labs.oreilly.com/books/1234000001802/ch07.html#merkle_trees) [Ethereum](https://github.com/ethereum/wiki/wiki/White-Paper#merkle-trees)
+Implements a balanced, merkle binary hash tree. [Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree) [Bitcoin](http://chimera.labs.oreilly.com/books/1234000001802/ch07.html#merkle_trees)
 
 Merkle trees are a beautiful data structure for summarizing and verifying data integrity.
 They are named in honor of distinguished computer scientist Ralph Merkle. This library is named
@@ -14,6 +14,16 @@ with a slight twist (le to el :arrows_clockwise:) to salute Angela Merkel's push
 >
 > “These algorithms — when they are not transparent — can lead to a distortion of our perception. 
 > They narrow our breadth of information.” [Source](http://www.newsmediauk.org/Latest/merkel-calls-for-transparency-of-internet-giants-algorithms)
+
+A Source of Data Integrity
+ 
+>  The reason why this works is that hashes propagate upward: if a malicious 
+>  user attempts to swap in a fake transaction into the bottom of a Merkle tree, 
+>  this change will cause a change in the node above, and then a change in the 
+>  node above that, finally changing the root of the tree and therefore the hash 
+>  of the block, causing the protocol to register it as a completely different block 
+>  (almost certainly with an invalid proof of work)"
+>   - [Ethereum](https://github.com/ethereum/wiki/wiki/White-Paper#merkle-trees)
 
 ## Noteworthy
 

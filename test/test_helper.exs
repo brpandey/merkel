@@ -9,9 +9,11 @@ defmodule Merkel.TestHelper do
 
   @list [{"zebra", 23}, {<<9,9,2>>, "992"}, {"giraffe", nil}, {"anteater", "12"}, 
          {"walrus", 49}, {<<23,1,0>>, 99}, {<<100,2>>, :furry}, {"lion", "3"}, 
-         {"kangaroo", nil}, {"cow", 99}, {"leopard", :fast}]
-
-  @list_size 11
+         {"kangaroo", nil}, {"cow", 99}, {"leopard", :fast}, {<<3,2,1>>, nil}, 
+         {"kingfisher", :greedy}, {"turtle", "shell"}, {"lynx", 10}, {<<8>>, ""}, 
+         {<<76>>, :new}, {"hippo", 10}, {"elephant", "gray"}, {"aardvark", 7}]
+  
+  @list_size 20
 
 
   # Routines to construct the tree of desired size, with three tree types
@@ -22,12 +24,12 @@ defmodule Merkel.TestHelper do
   def build_tree(size) when is_integer(size), do: build_tree(%{size: size})
   def build_tree(%{size: size}) when size > 0 and size <= @list_size do
 
-    ls = Enum.count(@list)
+    list = Enum.shuffle(@list)
     
-    pairs = Enum.take(@list, size)
-    valid_keys = Enum.take(@list, size) |> Enum.map(fn {k,_v} -> k end)
-    invalid_keys = Enum.take(@list, size - ls) |> Enum.map(fn {k, _v} -> k end)
-    valid_values = Enum.take(@list, size) |> Enum.map(fn {_k,v} -> v end)
+    pairs = Enum.take(list, size)
+    valid_keys = Enum.take(list, size) |> Enum.map(fn {k,_v} -> k end)
+    invalid_keys = Enum.take(list, size - Enum.count(list)) |> Enum.map(fn {k, _v} -> k end)
+    valid_values = Enum.take(list, size) |> Enum.map(fn {_k,v} -> v end)
     
     # These three trees don't need to be the same structure but should have the same contents
 

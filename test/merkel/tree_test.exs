@@ -11,7 +11,7 @@ defmodule Merkel.TreeTest do
   alias Merkel.BinaryHashTree, as: Tree
   alias Merkel.BinaryNode, as: Node
 
-  @list_size 11
+  @list_size 20
 
   # Would like to use quick check or some property testing
   # But will do it the old fashioned way to build intuition first
@@ -137,23 +137,10 @@ defmodule Merkel.TreeTest do
 
   end
 
-  # root 
-  #  / \
-  # l   r
-
-  describe "tree of size 2" do end
-
-  # 1) false, _               2) true, _             
-  #       root                 root
-  #      /    \               /    \
-  #  inner     r             l      inner
-  #  / \                            /    \
-  # l   r                          l      r
-
 
   test "verify audit hashes work for each key in tree of size n and are height balanced" do
 
-    # Build trees of size 1 to and including 11
+    # Build trees of size 1 to and including list size
     Enum.map(1..@list_size, fn size -> 
 
       tdata = build_tree(size)
@@ -161,13 +148,22 @@ defmodule Merkel.TreeTest do
       {:ok, {t0, t1, t2}} = tdata |> Keyword.fetch(:trees)
       {:ok, valid_keys} = tdata |> Keyword.fetch(:valid_keys)
       
+      sorted_vkeys = valid_keys |> Enum.sort
+
       # Process each tree
       Enum.map([t0, t1, t2], fn tree -> 
+
+        tree_keys = Merkel.keys(tree) |> Enum.sort
         
+        # Sanity check 
+        assert sorted_vkeys == tree_keys
+
+        # Logger.debug("tree_keys are #{inspect tree_keys}")
+
         # Process each of the valid keys for each tree
         # Specifically we create an audit proof for each key, verify it
         # And ensure the audit path length reflects that the tree is balanced
-        Enum.map(valid_keys, fn k ->
+        Enum.map(sorted_vkeys, fn k ->
           
           proof = Merkel.audit(tree, k)
           assert true == Merkel.verify(proof, Merkel.tree_hash(tree))
@@ -195,7 +191,7 @@ defmodule Merkel.TreeTest do
   # This proves that the inner key data is propagated properly upon delete
   test "deleting middle key in tree of size n and ensuring state is well-formed" do
 
-    # Build trees of size 4 to and including 11
+    # Build trees of size 4 to and including list size
     Enum.map(4..@list_size, fn size -> 
 
       tdata = build_tree(size)
