@@ -30,7 +30,7 @@ defmodule Merkel do
   def audit(%Tree{} = t, key) when is_binary(key), do: Audit.create(t, key)
   
   @spec verify(Audit.t, String.t) :: boolean
-  def verify(%Audit{} = proof, root_hash) when is_binary(root_hash) do
+  def verify(%Audit{} = proof, root_hash) do
     Audit.verify(proof, root_hash)
   end
 

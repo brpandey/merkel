@@ -40,8 +40,9 @@ defmodule Merkel.Audit do
   This includes the set of sibling hashes in the path to the merkle root, 
   that will ensure verification
   """
-  @spec create(Tree.t, Tree.key) :: nil | t
-  def create(%Tree{root: nil}, _key), do: nil
+  @spec create(nil | Tree.t, Tree.key) :: nil | t
+  def create(nil, _key), do: nil
+  def create(%Tree{root: nil}, key), do: %Audit{key: key, path: nil}
   def create(%Tree{root: %Node{} = root} = t, key) when is_binary(key) do
 
     case Tree.lookup(t, key) do
@@ -54,8 +55,9 @@ defmodule Merkel.Audit do
   end
 
   @doc "Verify the candidate key and audit path are authenticated as part of the merkle tree"
-  @spec verify(t, String.t) :: boolean
-  def verify(%Audit{key: _, path: nil}, _th), do: false
+  @spec verify(nil | t, String.t) :: boolean
+  def verify(nil, _th), do: nil
+  def verify(%Audit{path: nil}, _th), do: false
   def verify(%Audit{key: key, path: trail}, tree_hash) 
   when is_binary(key) and is_tuple(trail) and is_binary(tree_hash) do
 
