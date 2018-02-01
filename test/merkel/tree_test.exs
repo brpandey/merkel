@@ -4,15 +4,12 @@ defmodule Merkel.TreeTest do
   # Test tree create, lookup, keys, insert, delete, size, tree_hash operations
 
   require Logger
-  import Merkel.Helper
+
+  import Merkel.TestHelper
   import Merkel.Crypto
 
   alias Merkel.BinaryHashTree, as: Tree
   alias Merkel.BinaryNode, as: Node
-
-  @list [{"zebra", 23}, {<<9,9,2>>, "992"}, {"giraffe", nil}, {"anteater", "12"}, 
-         {"walrus", 49}, {<<23,1,0>>, 99}, {<<100,2>>, :furry}, {"lion", "3"}, 
-         {"kangaroo", nil}, {"cow", 99}, {"leopard", :fast}]
 
   @list_size 11
 
@@ -51,7 +48,7 @@ defmodule Merkel.TreeTest do
 
     root_hash = "3755b417b0f937026ac1b867a397d6dec80dfd463c232c2daaf1de974b93da82"
 
-    assert root_hash == Merkel.Crypto.hash(k0)
+    assert root_hash == hash(k0)
 
     # insert item
     root = %Node{key_hash: root_hash, search_key: k0, key: k0, value: :blue, height: 0, left: nil, right: nil}
@@ -248,32 +245,5 @@ defmodule Merkel.TreeTest do
     end)
 
   end
-
-  
-  defp build_tree(size) when is_integer(size), do: build_tree(%{size: size})
-  defp build_tree(%{size: size}) when size > 0 and size <= @list_size do
-
-    ls = Enum.count(@list)
-    
-    pairs = Enum.take(@list, size)
-    valid_keys = Enum.take(@list, size) |> Enum.map(fn {k,_v} -> k end)
-    invalid_keys = Enum.take(@list, size - ls) |> Enum.map(fn {k, _v} -> k end)
-    valid_values = Enum.take(@list, size) |> Enum.map(fn {_k,v} -> v end)
-    
-    # These three trees don't need to be the same structure but should have the same contents
-
-    {^size, r0} = create_tree(pairs) # This tree creates the default tree with the larger subtree always on the left
-    {^size, r1} = create_toggle_tree(pairs) # The tree creates a balanced tree but in a random pattern
-    t2 = Enum.reduce(pairs, Merkel.new(), 
-                     fn {k,v}, acc -> # This tree is iteratively constructed and uses rotations
-                          Merkel.insert(acc, {k,v})
-                     end)
-    
-    t0 = %Tree{size: size, root: r0}
-    t1 = %Tree{size: size, root: r1}
-
-    [size: size, trees: {t0, t1, t2}, valid_keys: valid_keys, invalid_keys: invalid_keys, valid_values: valid_values]
-  end
-
 
 end
