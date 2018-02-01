@@ -14,6 +14,8 @@ defmodule Merkel.TreeTest do
          {"walrus", 49}, {<<23,1,0>>, 99}, {<<100,2>>, :furry}, {"lion", "3"}, 
          {"kangaroo", nil}, {"cow", 99}, {"leopard", :fast}]
 
+  @list_size 11
+
   # Would like to use quick check or some property testing
   # But will do it the old fashioned way to build intuition first
   # Plus its fun drawing
@@ -126,14 +128,6 @@ defmodule Merkel.TreeTest do
       assert ^k1_hash = Merkel.tree_hash(t0)
       
     end
-    
-    @tag size: 1
-    test "authentication", %{trees: {t0, _, _}, valid_keys: vk, invalid_keys: ik} do
-
-      Logger.debug("authentication: tree is #{inspect t0}, valid keys is #{vk}, invalid_keys is #{ik}")
-
-    end
-
 
   end
 
@@ -152,67 +146,105 @@ defmodule Merkel.TreeTest do
   #  / \                            /    \
   # l   r                          l      r
 
-  describe "tree of size 3" do
 
+  test "verify audit hashes work for each key in tree of size n and are height balanced" do
+
+    # Build trees of size 4 to and including 11
+    Enum.map(1..@list_size, fn size -> 
+
+      tdata = build_tree(size)
+      
+      {:ok, {t0, t1, t2}} = tdata |> Keyword.fetch(:trees)
+      {:ok, valid_keys} = tdata |> Keyword.fetch(:valid_keys)
+      
+      # Process each tree
+      Enum.map([t0, t1, t2], fn tree -> 
+        
+        # Process each of the valid keys for each tree
+        # Specifically we create an audit proof for each key, verify it
+        # And ensure the audit path length reflects that the tree is balanced
+        Enum.map(valid_keys, fn k ->
+          
+          proof = Merkel.audit(tree, k)
+          assert true == Merkel.verify(proof, Merkel.tree_hash(tree))
+          
+          # Let's make sure the tree is balanced
+          length = Merkel.Audit.length(proof)
+          balanced_height = round(:math.log2(size))
+          is_balanced = abs(length - balanced_height) <= 1
+          assert true == is_balanced
+          
+          # Logger.debug("audit trail length is #{length}, tree size is #{size}, log2size is #{balanced_height}")
+          
+          true
+          
+        end)
+        
+      end)
+      
+      
+    end)
+    
+  end
+  
+
+  # This proves that the inner key data is propagated properly upon delete
+  test "deleting middle key in tree of size n and ensuring state is well-formed" do
+
+    # Build trees of size 4 to and including 11
+    Enum.map(4..@list_size, fn size -> 
+
+      tdata = build_tree(size)
+
+      {:ok, {t0, t1, t2}} = tdata |> Keyword.fetch(:trees)
+      {:ok, valid_keys} = tdata |> Keyword.fetch(:valid_keys)
+      
+      sorted_vkeys = Enum.sort(valid_keys) 
+      
+      # 1) Grab the key that is the inner key for the root.
+      # 2) Delete that key
+      # 3) Ensure in the new tree, the key is not found
+      # 4) Ensure the new root search key is < than the previous inner key 
+      # (since it has to pick it from the left subtree and we don't rebalance after a delete)
+      
+      # 5) To be more exact this key should be the next decreasing key after the deleted key in 
+      # the sorted keys list
+                       
+      l = Enum.map([t0, t1, t2], fn tree -> 
+        
+        skey1 = tree.root.search_key # 1
+
+        # Sanity check
+        {:ok, _} = Merkel.lookup(tree, skey1)
+
+        {:ok, tree} = Merkel.delete(tree, skey1) # 2
+        {:error, _} = Merkel.lookup(tree, skey1) # 3
+        
+        skey2 = tree.root.search_key
+
+
+        assert true = skey2 < skey1 # 4
+                                    
+        iskey1 = Enum.find_index(sorted_vkeys, fn x -> x == skey1 end)
+        skey_smaller = Enum.at(sorted_vkeys, iskey1 - 1)      
+        assert skey_smaller == skey2 # 5
+      
+        # Logger.debug("valid keys #{inspect sorted_vkeys}")
+        # Logger.debug("skey1 #{inspect skey1}, skey2 #{inspect skey2}, skey_smaller #{inspect skey_smaller}")
+        
+        true
+
+      end)
+
+      assert true == Enum.uniq(l) |> List.first
+
+    end)
 
   end
 
-  #        root
-  #       /     \
-  #  inner       inner
-  #  /    \      /    \
-  # l     r     l      r
-
-  describe "tree of size 4" do
-
-  end
-
-  # 1) false, false
-  #
-  #           root              
-  #          /    \
-  #      inner     inner
-  #     /    \    /     \
-  #   inner   r  l       r
-  #   /   \
-  #  l     r
-
-  # 2) false, true
-  #
-  #           root              
-  #          /    \
-  #      inner     inner
-  #     /    \    /     \
-  #    l    inner l       r
-  #         /   \
-  #        l     r
-
-  # 3) true, false
-  #
-  #           root              
-  #          /    \
-  #      inner     inner
-  #     /    \    /     \
-  #    l      r  l      inner
-  #                     /   \
-  #                    l     r
-
-  # 4) true, true
-  #
-  #           root              
-  #          /    \
-  #      inner     inner
-  #     /    \    /     \
-  #    l      r inner    r
-  #             /   \
-  #            l     r
-
-  describe "tree of size 5" do
-
-  end
-
-#  defp build_tree(context) do
-  defp build_tree(%{size: size}) when size > 0 do
+  
+  defp build_tree(size) when is_integer(size), do: build_tree(%{size: size})
+  defp build_tree(%{size: size}) when size > 0 and size <= @list_size do
 
     ls = Enum.count(@list)
     

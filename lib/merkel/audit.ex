@@ -31,7 +31,7 @@ defmodule Merkel.Audit do
 
   require Logger
 
-  defstruct key: nil, path: []
+  defstruct key: nil, path: nil
 
   @type t :: %__MODULE__{}
 
@@ -72,9 +72,28 @@ defmodule Merkel.Audit do
 
 
   #####################
+  # Public helpers    #
+  #####################
+
+  @doc "Returns audit trail path length"
+  @spec length(t | nil) :: non_neg_integer | nil
+  def length(nil), do: nil
+  def length(%Audit{path: nil}), do: 0
+  def length(%Audit{path: path}) when is_tuple(path) do
+    recursive_tuple_to_list(path) |> List.flatten |> Enum.count
+  end
+  
+
+  #####################
   # Private functions #
   #####################
 
+  # Convert recursive nested tuple into recursive nested list
+  defp recursive_tuple_to_list(tuple) when is_tuple(tuple) do
+    list = Tuple.to_list(tuple)
+    Enum.map(list, &recursive_tuple_to_list/1)
+  end
+  defp recursive_tuple_to_list(x) when is_binary(x), do: x
 
   # Recursive traverse implementation which builds the audit hash verification trail
   # These are the sibling node hashes along the way from the leaf in question to the
