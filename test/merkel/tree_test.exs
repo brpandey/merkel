@@ -153,7 +153,7 @@ defmodule Merkel.TreeTest do
 
   test "verify audit hashes work for each key in tree of size n and are height balanced" do
 
-    # Build trees of size 4 to and including 11
+    # Build trees of size 1 to and including 11
     Enum.map(1..@list_size, fn size -> 
 
       tdata = build_tree(size)
