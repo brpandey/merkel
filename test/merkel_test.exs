@@ -3,6 +3,5 @@ defmodule MerkelTest do
   doctest Merkel
 
   test "greets the world" do
-
   end
 end
