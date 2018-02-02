@@ -234,8 +234,8 @@ defmodule Merkel.BinaryHashTree do
     # If largest search_key is presented, We pass it on up
     case drop(r, key) do
       nil -> {l, n.search_key} # n.search_key is now the largest search key given the subtree rooted at node n
-      %Node{} = x -> %Node{ n | right: x} |> update_hash
-      {%Node{} = x, largest} -> { %Node{ n | right: x} |> update_hash, largest }
+      %Node{} = x -> %Node{ n | right: x} |> update_hash |> update_height
+      {%Node{} = x, largest} -> { %Node{ n | right: x} |> update_hash |> update_height, largest }
     end
   end
 
@@ -251,11 +251,20 @@ defmodule Merkel.BinaryHashTree do
     # If largest search_key is presented, we consume it and don't pass it up
     case drop(l, key) do
       nil -> r # Since we deleted on the left leaf we don't need to propagate a search key
-      %Node{} = x -> %Node{ n | left: x} |> update_hash
-      {%Node{} = x, largest} -> %Node{ n | search_key: largest, left: x} |> update_hash
+      %Node{} = x -> %Node{ n | left: x} |> update_hash |> update_height
+      {%Node{} = x, largest} -> %Node{ n | search_key: largest, left: x} |> update_hash |> update_height
     end
   end
   
+  
+  # Update height
+  @spec update_height(Node.t) :: Node.t
+  defp update_height(%Node{left: l, right: r} = node)
+  when not(is_nil(l)) and not(is_nil(r)) do
+    h = Kernel.max(l.height, r.height) + 1
+    Kernel.put_in(node.height, h)
+  end
+
   ##############################################################################
   # Hash helpers
   
