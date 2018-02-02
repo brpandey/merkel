@@ -37,10 +37,8 @@ defmodule Merkel.Mixfile do
   defp description() do
     """
     Implements a balanced, merkle binary hash tree.
-    Merkle trees are a beautiful data structure for summarizing and verifying 
-    data integrity. They are named in honor of distinguished computer scientist 
-    Ralph Merkle. This library is named with a slight twist (le to el) to 
-    salute Angela Merkel's push for algorithmic transparency.
+    Merkle trees are a beautiful data structure for summarizing 
+    and verifying data integrity. 
     """
   end
 
