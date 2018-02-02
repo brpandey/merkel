@@ -14,6 +14,8 @@ defmodule Merkel.Mixfile do
         "coveralls.html": :test,
       ],
       test_coverage: [tool: ExCoveralls],
+      description: description(),
+      package: package(),
       deps: deps()
     ]
   end
@@ -31,4 +33,23 @@ defmodule Merkel.Mixfile do
       {:excoveralls, "~> 0.7.4", only: [:test], runtime: false},
     ]
   end
+
+  defp description() do
+    """
+    Implements a balanced, merkle binary hash tree.
+    Merkle trees are a beautiful data structure for summarizing and verifying 
+    data integrity. They are named in honor of distinguished computer scientist 
+    Ralph Merkle. This library is named with a slight twist (le to el) to 
+    salute Angela Merkel's push for algorithmic transparency.
+    """
+  end
+
+  defp package() do
+    [
+     files: ["lib", "mix.exs", "README.md"],
+     maintainers: ["Bibek Pandey"],
+     licenses: ["MIT"],
+     links: %{"GitHub" => "https://github.com/brpandey/merkel"}
+     ]
+end
 end
