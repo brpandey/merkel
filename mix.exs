@@ -30,6 +30,7 @@ defmodule Merkel.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:ex_doc, "~> 0.18.1", only: :dev},
       {:excoveralls, "~> 0.7.4", only: [:test], runtime: false},
     ]
   end
