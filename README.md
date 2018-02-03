@@ -272,7 +272,7 @@ iex> proof = Merkel.audit(m6, "elephant")
 * Verify audit proof
 
 ```elixir
-iex> Merkel.verify(proof, Merkel.tree_hash(m))
+iex> Merkel.verify(proof, Merkel.tree_hash(m6))
 true
 ```
 
