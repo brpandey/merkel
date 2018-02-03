@@ -15,7 +15,7 @@ with a slight twist (le to el :arrows_clockwise:) to salute Angela Merkel's push
 > “These algorithms — when they are not transparent — can lead to a distortion of our perception. 
 > They narrow our breadth of information.” [Source](http://www.newsmediauk.org/Latest/merkel-calls-for-transparency-of-internet-giants-algorithms)
 
-A Source of Data Integrity
+A Source of Data Integrity -
  
 >  The reason why this works is that hashes propagate upward: if a malicious 
 >  user attempts to swap in a fake transaction into the bottom of a Merkle tree, 
