@@ -2,6 +2,7 @@ defmodule Merkel.AVLTest do
   use ExUnit.Case, async: true
 
   @root_hash "b79546dd73257070b95eefdaec251ce6c47085c92e898aa698b2a54975d4d3b6"
+  @random_vkey <<94>>
 
   test "multiple insertions, right skew" do
     # This is handled by AVL case 2) right right
@@ -70,6 +71,9 @@ defmodule Merkel.AVLTest do
              "#{inspect(tree)}"
 
     assert Merkel.tree_hash(tree) == h3
+
+    # Assert trying to balance again doesn't change things
+    assert tree.root == Merkel.AVL.balance(tree.root, @random_vkey, nil)
   end
 
   test "multiple insertions, left skew" do
@@ -104,6 +108,9 @@ defmodule Merkel.AVLTest do
 
     assert ~s(#Merkel.Tree<{4, {"#{@root_hash}", <<26>>, 2, {"ba5f..", <<23>>, 1, {"8f11..", <<23>>, 0}, {"58f7..", <<26>>, 0}}, {"cb8f..", "<=R..>", 1, {"8c25..", "R", 0}, {"74cd..", "^", 0}}}}>) ==
              "#{inspect(tree)}"
+
+    # Assert trying to balance again doesn't change things
+    assert tree.root == Merkel.AVL.balance(tree.root, @random_vkey, nil)
   end
 
   test "multiple insertions, left right skew" do
@@ -138,6 +145,9 @@ defmodule Merkel.AVLTest do
 
     assert ~s(#Merkel.Tree<{4, {"#{@root_hash}", <<26>>, 2, {"ba5f..", <<23>>, 1, {"8f11..", <<23>>, 0}, {"58f7..", <<26>>, 0}}, {"cb8f..", "<=R..>", 1, {"8c25..", "R", 0}, {"74cd..", "^", 0}}}}>) ==
              "#{inspect(tree)}"
+
+    # Assert trying to balance again doesn't change things
+    assert tree.root == Merkel.AVL.balance(tree.root, @random_vkey, nil)
   end
 
   test "multiple insertions, right left skew" do
@@ -172,5 +182,8 @@ defmodule Merkel.AVLTest do
 
     assert ~s(#Merkel.Tree<{4, {"#{@root_hash}", <<26>>, 2, {"ba5f..", <<23>>, 1, {"8f11..", <<23>>, 0}, {"58f7..", <<26>>, 0}}, {"cb8f..", "<=R..>", 1, {"8c25..", "R", 0}, {"74cd..", "^", 0}}}}>) ==
              "#{inspect(tree)}"
+
+    # Assert trying to balance again doesn't change things
+    assert tree.root == Merkel.AVL.balance(tree.root, @random_vkey, nil)
   end
 end

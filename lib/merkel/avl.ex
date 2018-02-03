@@ -20,6 +20,8 @@ defmodule Merkel.AVL do
   Runs the update callback function for each node that is affected by rotations
   """
   @spec balance(Node.t(), skey, function) :: Node.t()
+  def balance(%Node{} = node, s_key, nil), do: balance(node, s_key, & &1)
+
   def balance(%Node{left: l, right: r} = node, search_key, fn_update)
       when is_binary(search_key) do
     # Using height delta we determine if we need to balance the tree at this node
