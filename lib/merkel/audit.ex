@@ -90,6 +90,7 @@ defmodule Merkel.Audit do
   #####################
 
   # Convert recursive nested tuple into recursive nested list
+  @spec recursive_tuple_to_list(tuple | binary) :: list | binary
   defp recursive_tuple_to_list(tuple) when is_tuple(tuple) do
     list = Tuple.to_list(tuple)
     Enum.map(list, &recursive_tuple_to_list/1)
