@@ -1,5 +1,7 @@
 Merkel
 ==========
+
+[![Hex.pm](https://img.shields.io/hexpm/v/merkel.svg)](https://hex.pm/packages/merkel)
 ![Logo](https://raw.githubusercontent.com/brpandey/merkel/master/priv/images/merkel.png)
 
 Implements a balanced, merkle binary hash tree. [Wikipedia](https://en.wikipedia.org/wiki/Merkle_tree) [Bitcoin](http://chimera.labs.oreilly.com/books/1234000001802/ch07.html#merkle_trees)
