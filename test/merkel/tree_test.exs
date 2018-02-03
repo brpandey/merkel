@@ -11,7 +11,8 @@ defmodule Merkel.TreeTest do
   alias Merkel.BinaryHashTree, as: Tree
   alias Merkel.BinaryNode, as: Node
 
-  @list_size 20
+  @med_size 20
+  @big_size 65
 
   # Would like to use quick check or some property testing
   # But will do it the old fashioned way to build intuition first
@@ -424,9 +425,9 @@ defmodule Merkel.TreeTest do
   end
 
   test "verify audit hashes work for each key in tree of size n and are height balanced" do
-    # Build trees of size 1 to and including list size
-    Enum.map(1..@list_size, fn size ->
-      tdata = build_tree(size)
+    # Build trees of size 1 to and including big size
+    Enum.map(1..@big_size, fn size ->
+      tdata = big_tree(size)
 
       {:ok, {t0, t1, t2}} = tdata |> Keyword.fetch(:trees)
       {:ok, valid_keys} = tdata |> Keyword.fetch(:valid_keys)
@@ -452,10 +453,17 @@ defmodule Merkel.TreeTest do
           # Let's make sure the tree is balanced
           length = Merkel.Audit.length(proof)
           balanced_height = round(:math.log2(size))
-          is_balanced = abs(length - balanced_height) <= 1
-          assert true == is_balanced
+          is_balanced = abs(length - balanced_height) <= 2
 
           # Logger.debug("audit trail length is #{length}, tree size is #{size}, log2size is #{balanced_height}")
+
+          if !is_balanced do
+            Logger.debug("key is #{k}")
+            Logger.debug("path is #{inspect(proof.path)}")
+            Logger.debug("tree is #{inspect(tree)}")
+          end
+
+          assert true == is_balanced
 
           true
         end)
@@ -465,8 +473,8 @@ defmodule Merkel.TreeTest do
 
   # This proves that the inner key data is propagated properly upon delete
   test "deleting middle key in tree of size n and ensuring state is well-formed" do
-    # Build trees of size 4 to and including list size
-    Enum.map(4..@list_size, fn size ->
+    # Build trees of size 4 to and including size
+    Enum.map(4..@med_size, fn size ->
       tdata = build_tree(size)
 
       {:ok, {t0, t1, t2}} = tdata |> Keyword.fetch(:trees)
@@ -576,23 +584,20 @@ defmodule Merkel.TreeTest do
     # Delete the third left most key
     {:ok, tree} = Merkel.delete(tree, skey2)
 
-    # Reinsert the same previously deleted left most key
+    # Reinsert the same previously deleted third left most key
     tree = Merkel.insert(tree, {skey2, "I feel refreshed"})
 
     # In this case the hashes are different when we try to reinsert
     # Hence reinsert the same key right after deleting doesn't
-    # guarentee the merkle root will be the same
+    # guarantee the merkle root will be the same
 
     new_new_tree_hash = Merkel.tree_hash(tree)
     assert new_tree_hash != new_new_tree_hash
 
-    # recheck display
-
-    # tree str 65
     new_tree_str_65 =
       "#Merkel.Tree<{65, {\"77fa5b3594f168ce62d76d4cbcf7fdda27cef7aaa10bc15b04b52ef6b2ec8257\", 7, \"...\", \"...\"}}>"
 
-    # Check the display again
+    # Check the display again, it has a new merkle root
     assert new_tree_str_65 == "#{inspect(tree)}"
   end
 end

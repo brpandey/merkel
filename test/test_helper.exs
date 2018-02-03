@@ -144,4 +144,5 @@ defmodule Merkel.TestHelper do
   end
 
   def big_tree(), do: build_tree(%{size: @list2_size}, @list2)
+  def big_tree(size) when size > 0, do: build_tree(%{size: size}, @list2)
 end
