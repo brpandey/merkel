@@ -4,14 +4,14 @@ defmodule Merkel.Mixfile do
   def project do
     [
       app: :merkel,
-      version: "0.5.0",
+      version: "1.0.0",
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       preferred_cli_env: [
-        "coveralls": :test,
+        coveralls: :test,
         "coveralls.detail": :test,
         "coveralls.post": :test,
-        "coveralls.html": :test,
+        "coveralls.html": :test
       ],
       test_coverage: [tool: ExCoveralls],
       description: description(),
@@ -31,7 +31,7 @@ defmodule Merkel.Mixfile do
   defp deps do
     [
       {:ex_doc, "~> 0.18.1", only: :dev},
-      {:excoveralls, "~> 0.7.4", only: [:test], runtime: false},
+      {:excoveralls, "~> 0.7.4", only: [:test], runtime: false}
     ]
   end
 
@@ -45,10 +45,10 @@ defmodule Merkel.Mixfile do
 
   defp package() do
     [
-     files: ["lib", "mix.exs", "README.md"],
-     maintainers: ["Bibek Pandey"],
-     licenses: ["MIT"],
-     links: %{"GitHub" => "https://github.com/brpandey/merkel"}
-     ]
-end
+      files: ["lib", "mix.exs", "README.md"],
+      maintainers: ["Bibek Pandey"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/brpandey/merkel"}
+    ]
+  end
 end

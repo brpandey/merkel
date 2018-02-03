@@ -299,6 +299,18 @@ config :merkel, hash_apply: :double
 ```
 
 
+## Install
+
+
+* Add to mix dependency list in mix.exs
+
+```elixir
+def deps do
+  [{:merkel, "~> 1.0.0"}]
+end
+```
+
+
 ## Future
 
 * Parallel insertions / deletions? :)

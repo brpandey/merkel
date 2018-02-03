@@ -36,7 +36,6 @@ defmodule Merkel.BinaryNode do
 
   @doc "Provides node info to be used in Inspect protocol implementation"
   @spec info(t) :: tuple
-  def info(%Node{key_hash: nil}), do: {nil}
 
   # Inner node
   def info(%Node{key_hash: hash, left: l, right: r} = node)

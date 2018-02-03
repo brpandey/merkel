@@ -6,6 +6,7 @@ defmodule Merkel.TestHelper do
   import Merkel.Helper
   alias Merkel.BinaryHashTree, as: Tree
 
+  # size 20
   @list [
     {"zebra", 23},
     {<<9, 9, 2>>, "992"},
@@ -13,7 +14,7 @@ defmodule Merkel.TestHelper do
     {"anteater", "12"},
     {"walrus", 49},
     {<<23, 1, 0>>, 99},
-    {<<100, 2>>, :furry},
+    {<<100, 2, 99>>, :furry},
     {"lion", "3"},
     {"kangaroo", nil},
     {"cow", 99},
@@ -23,23 +24,92 @@ defmodule Merkel.TestHelper do
     {"turtle", "shell"},
     {"lynx", 10},
     {<<8>>, ""},
-    {<<76>>, :new},
+    {<<76, 65, 11, 10, 9, 82>>, :new},
     {"hippo", 10},
     {"elephant", "gray"},
     {"aardvark", 7}
   ]
 
-  @list_size 20
+  @list2_size 65
+
+  @list2 [
+    {"alligator", nil},
+    {"ant", nil},
+    {"bear", nil},
+    {"bee", nil},
+    {"bird", nil},
+    {"camel", nil},
+    {"cat", nil},
+    {"cheetah", nil},
+    {"chicken", nil},
+    {"chimpanzee", nil},
+    {"cow", nil},
+    {"crocodile", nil},
+    {"deer", nil},
+    {"dog", nil},
+    {"dolphin", nil},
+    {"duck", nil},
+    {"eagle", nil},
+    {"elephant", nil},
+    {"emu", nil},
+    {"fish", nil},
+    {"fly", nil},
+    {"fox", nil},
+    {"frog", nil},
+    {"giraffe", nil},
+    {"goat", nil},
+    {"goose", nil},
+    {"goldfish", nil},
+    {"hamster", nil},
+    {"hawk", nil},
+    {"heron", nil},
+    {"hippopotamus", nil},
+    {"horse", nil},
+    {"hummingbird", nil},
+    {"kangaroo", nil},
+    {"kitten", nil},
+    {"kiwi", nil},
+    {"lion", nil},
+    {"lobster", nil},
+    {"lynx", nil},
+    {"monkey", nil},
+    {"octopus", nil},
+    {"owl", nil},
+    {"panda", nil},
+    {"peacock", nil},
+    {"pheasant", nil},
+    {"pig", nil},
+    {"puppy", nil},
+    {"rabbit", nil},
+    {"rat", nil},
+    {"salamander", nil},
+    {"scorpion", nil},
+    {"seal", nil},
+    {"shark", nil},
+    {"sheep", nil},
+    {"snail", nil},
+    {"snake", nil},
+    {"spider", nil},
+    {"squirrel", nil},
+    {"stork", nil},
+    {"tiger", nil},
+    {"turkey", nil},
+    {"turtle", nil},
+    {"vulture", nil},
+    {"wolf", nil},
+    {"zebra", nil}
+  ]
 
   # Routines to construct the tree of desired size, with three tree types
   # The three tree types are merely to provide some diversity in tree formation 
   # since we are implementing a dynamic tree library with rotations
 
   # Along with the trees we provide a convenience list of relevant tree data
+
   def build_tree(size) when is_integer(size), do: build_tree(%{size: size})
 
-  def build_tree(%{size: size}) when size > 0 and size <= @list_size do
-    list = Enum.shuffle(@list)
+  def build_tree(%{size: size}, list \\ @list) when size > 0 do
+    list = Enum.shuffle(list)
 
     pairs = Enum.take(list, size)
     valid_keys = Enum.take(list, size) |> Enum.map(fn {k, _v} -> k end)
@@ -72,4 +142,6 @@ defmodule Merkel.TestHelper do
       valid_values: valid_values
     ]
   end
+
+  def big_tree(), do: build_tree(%{size: @list2_size}, @list2)
 end

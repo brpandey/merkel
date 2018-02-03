@@ -104,10 +104,20 @@ defmodule Merkel.Helper do
   # We override this by specifying which side we want the bigger number to be
   # and if we want that to alternate or not if the halves differ in size
 
+  #             5                    5
+  #            / \                  / \
+  #           3   2                2   3
+  #          / \ / \              / \ / \
+  #         2  1 1  1            1  1 1  2
+  #        / \                          / \
+  #       1   1                        1   1
+  #
+  # The figure on the left is 0 0 , and the right is 1 0
+
   @spec partition(non_neg_integer, tuple) :: {non_neg_integer, non_neg_integer, tuple}
   defp partition(n, {on_right, alternate} = toggle_acc)
        when is_integer(n) and is_boolean(on_right) and is_boolean(alternate) do
-    # smaller and bigger half
+    # smaller and bigger half when n is odd, otherwise both halves are equal
     {sh, bh} = do_partition(n)
 
     case sh != bh do
