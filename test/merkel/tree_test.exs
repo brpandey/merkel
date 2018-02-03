@@ -32,8 +32,13 @@ defmodule Merkel.TreeTest do
 
   test "empty tree" do
     pair = {k0, _v} = {"starfish", :blue}
+    pair2 = {"starfish", "green"}
 
     empty = Merkel.new()
+    empty2 = Merkel.new([])
+
+    assert empty == empty2
+
     assert %Tree{size: 0, root: nil} == empty
 
     # lookup item
@@ -60,6 +65,10 @@ defmodule Merkel.TreeTest do
     tree = %Tree{size: 1, root: root}
 
     assert tree == Merkel.insert(empty, pair)
+
+    # Test update
+    tree = Merkel.insert(tree, pair2)
+    assert {:ok, "green"} == Merkel.lookup(tree, k0)
 
     # delete item
     assert {:error, "key: starfish not found in tree"} == Merkel.delete(empty, k0)

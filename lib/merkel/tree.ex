@@ -37,7 +37,7 @@ defmodule Merkel.BinaryHashTree do
   """
   @spec create(none | list(pair)) :: t | no_return
   def create(), do: %Tree{size: 0, root: nil}
-  def create([]), do: raise("List can not be empty")
+  def create([]), do: create()
 
   def create([{k, _v} | _tail] = list) when is_binary(k) do
     {size, root} = create_tree(list)

@@ -49,9 +49,10 @@ defmodule Merkel.TestHelper do
     # These three trees don't need to be the same structure but should have the same contents
 
     # This tree creates the default tree with the larger subtree always on the left
-    {^size, r0} = create_tree(pairs)
+    t0 = Merkel.new(pairs)
     # The tree creates a balanced tree but in a random pattern
     {^size, r1} = create_toggle_tree(pairs)
+    t1 = %Tree{size: size, root: r1}
 
     t2 =
       Enum.reduce(
@@ -62,9 +63,6 @@ defmodule Merkel.TestHelper do
           Merkel.insert(acc, {k, v})
         end
       )
-
-    t0 = %Tree{size: size, root: r0}
-    t1 = %Tree{size: size, root: r1}
 
     [
       size: size,

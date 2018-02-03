@@ -164,11 +164,6 @@ defmodule Merkel.Helper do
 
   @spec partition_build(list(pair), non_neg_integer, tuple | Enumerable.t()) :: tuple
 
-  # Base case, e.g. empty list
-  defp partition_build(list, 0, t_acc) do
-    {nil, list, t_acc}
-  end
-
   # Leaves case
   # From the diagram above the 1's are where the leaves go
   defp partition_build([head | tail], 1, t_acc) when is_tuple(head) do
