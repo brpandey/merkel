@@ -184,22 +184,24 @@ defmodule Merkel.TreeTest do
             }
         end
 
-      # insert item but don't save merkel tree
-      tree = %Tree{size: 2, root: root}
+      # insert item
+      new_tree = %Tree{size: 2, root: root}
 
-      assert tree == Merkel.insert(t0, pair)
+      assert new_tree == Merkel.insert(t0, pair)
 
-      d_tree = %Tree{size: 0, root: nil}
+      empty = %Tree{size: 0, root: nil}
 
       # delete item
       assert {:error, _} = Merkel.delete(t0, ik)
-      assert {:ok, d_tree} == Merkel.delete(t0, k1)
+      assert {:ok, empty} == Merkel.delete(t0, k1)
 
       # size
       assert 1 == Merkel.size(t0)
 
-      # root hash
-      assert ^k1_hash = Merkel.tree_hash(t0)
+      # root hash 
+      # A newly inserted tree, and its hash should be different than the old tree - Hence definition
+      assert k1_hash == Merkel.tree_hash(t0)
+      assert k1_hash != Merkel.tree_hash(new_tree)
 
       # audit
       proof = %Merkel.Audit{key: k1, path: {}}
@@ -297,7 +299,7 @@ defmodule Merkel.TreeTest do
             }
         end
 
-      t0_hash = root.key_hash
+      t0_hash_size2 = root.key_hash
 
       tree = %Tree{size: 2, root: root}
 
@@ -329,7 +331,6 @@ defmodule Merkel.TreeTest do
       root =
         case k3 > root.search_key do
           true ->
-            # Logger.debug("root.right is #{inspect root.right}")
             inner =
               if k3 > root.right.search_key do
                 h = hash_concat(root.right.key_hash, k3_hash)
@@ -363,7 +364,6 @@ defmodule Merkel.TreeTest do
             %Node{root | height: 2, key_hash: root_hash, right: inner}
 
           false ->
-            # Logger.debug("root.left is #{inspect root.left}")
             inner =
               if k3 > root.left.search_key do
                 h = hash_concat(root.left.key_hash, k3_hash)
@@ -402,6 +402,10 @@ defmodule Merkel.TreeTest do
 
       assert tree_new == Merkel.insert(t0, pair)
 
+      # The tree hash for size 3 should not be equal to the tree hash for size 2
+      # Hence the definition!
+      assert t0_hash_size2 != Merkel.tree_hash(tree_new)
+
       # delete item in newly inserted tree, ensure it matches previous tree
       assert {:error, _} = Merkel.delete(tree_new, ik)
       assert {:ok, tree} == Merkel.delete(tree_new, k3)
@@ -409,11 +413,13 @@ defmodule Merkel.TreeTest do
       # size
       assert 2 == Merkel.size(t0)
 
-      # root hash
-      assert ^t0_hash = Merkel.tree_hash(t0)
+      # root hash, since the tree is very small only 2, inserting an extra
+      # and deleting doesn't change the hashes of the two trees 
+      # but will for larger trees
+      assert ^t0_hash_size2 = Merkel.tree_hash(t0)
 
       # audit
-      assert true == Merkel.verify(Merkel.audit(t0, k1), t0_hash)
+      assert true == Merkel.verify(Merkel.audit(t0, k1), t0_hash_size2)
     end
   end
 
