@@ -20,21 +20,6 @@ defmodule Merkel.Mixfile do
     ]
   end
 
-  # Run "mix help compile.app" to learn about applications.
-  def application do
-    [
-      extra_applications: [:logger]
-    ]
-  end
-
-  # Run "mix help deps" to learn about dependencies.
-  defp deps do
-    [
-      {:ex_doc, "~> 0.18.1", only: :dev},
-      {:excoveralls, "~> 0.7.4", only: [:test], runtime: false}
-    ]
-  end
-
   defp description() do
     """
     Implements a balanced, merkle binary hash tree.
@@ -48,7 +33,25 @@ defmodule Merkel.Mixfile do
       files: ["lib", "mix.exs", "README.md"],
       maintainers: ["Bibek Pandey"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/brpandey/merkel"}
+      links: %{
+        "GitHub" => "https://github.com/brpandey/merkel",
+        "Docs" => "https://hexdocs.pm/merkel/"
+      }
+    ]
+  end
+
+  # Run "mix help compile.app" to learn about applications.
+  def application do
+    [
+      extra_applications: [:logger]
+    ]
+  end
+
+  # Run "mix help deps" to learn about dependencies.
+  defp deps do
+    [
+      {:ex_doc, "~> 0.18.1", only: :dev},
+      {:excoveralls, "~> 0.7.4", only: [:test]}
     ]
   end
 end
