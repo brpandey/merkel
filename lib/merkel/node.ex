@@ -41,7 +41,7 @@ defmodule Merkel.BinaryNode do
   def info(%Node{key_hash: hash, left: l, right: r} = node)
       when is_binary(hash) and not is_nil(l) and not is_nil(r) do
     # Truncate the hash so it's easier to read as well as the search key
-    <<hash_head::binary-size(@display_hash_first_n_bytes)>> <> _rest = hash
+    hash_head = trunc_hash_key(hash)
     skey = trunc_search_key(node.search_key)
 
     {"#{hash_head}..", skey, node.height, node.left, node.right}
@@ -50,9 +50,14 @@ defmodule Merkel.BinaryNode do
   # Leaf node
   def info(%Node{key_hash: hash, left: nil, right: nil} = node) when is_binary(hash) do
     # Truncate the hash so it's easier to read
-    <<hash_head::binary-size(@display_hash_first_n_bytes)>> <> _rest = hash
+    hash_head = trunc_hash_key(hash)
 
     {"#{hash_head}..", node.search_key, node.height}
+  end
+
+  def trunc_hash_key(seq) when is_binary(seq) do
+    <<seq_head::binary-size(@display_hash_first_n_bytes)>> <> _rest = seq
+    seq_head
   end
 
   def trunc_search_key(seq) when is_binary(seq) do

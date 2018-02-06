@@ -5,7 +5,7 @@ defmodule Merkel do
   """
 
   alias Merkel.BinaryHashTree, as: Tree
-  alias Merkel.Audit
+  alias Merkel.{Audit, Printer}
 
   # Merkle tree CRUD
   @spec new(none | list(tuple)) :: Tree.t()
@@ -39,4 +39,7 @@ defmodule Merkel do
 
   @spec size(Tree.t()) :: non_neg_integer
   def size(%Tree{} = t), do: Tree.size(t)
+
+  @spec print(Tree.t()) :: :ok
+  def print(%Tree{} = t), do: Printer.pretty_print(t)
 end

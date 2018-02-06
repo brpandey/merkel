@@ -277,6 +277,42 @@ true
 ```
 
 
+* Pretty print
+
+```elixir
+iex> Merkel.print(m6)
+
+              0 zebra 676c..
+          /
+       2 <=wa..> 0d77..
+          \
+                     0 walrus 9671..
+                 /
+              1 <=pe..> b881..
+                 \
+                     0 penguin 0a43..
+   /
+
+3 <=gi..> e79f6fa607ad5d0a8e93a8ba759b266d52a71471222f11fe1ab07ee89ef9f4a4 (Merkle Root)
+
+   \
+                     0 giraffe 6bb7..
+                 /
+              1 <=el..> 3b00..
+                 \
+                     0 elephant cd08..
+          /
+       2 <=an..> 3c2f..
+          \
+                     0 anteater b0ce..
+                 /
+              1 <=aa..> 2fc5..
+                 \
+                     0 aardvark cf9c..
+:ok
+
+```
+
 ## Configure
 
 
