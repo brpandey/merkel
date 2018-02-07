@@ -22,6 +22,7 @@ defmodule Merkel.TreePropTest do
     :ok
   end
 
+  # Proves merkle hash concatenation property
   test "verify audit hashes work for each key in tree of size n and are height balanced" do
     # Build trees of size 1 to and including big size
     Enum.map(1..@big_size, fn size ->
