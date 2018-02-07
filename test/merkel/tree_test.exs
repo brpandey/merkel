@@ -406,6 +406,9 @@ defmodule Merkel.TreeTest do
       # Hence the definition!
       assert t0_hash_size2 != Merkel.tree_hash(tree_new)
 
+      # print
+      assert :ok == Merkel.print(tree_new)
+
       # delete item in newly inserted tree, ensure it matches previous tree
       assert {:error, _} = Merkel.delete(tree_new, ik)
       assert {:ok, tree} == Merkel.delete(tree_new, k3)
