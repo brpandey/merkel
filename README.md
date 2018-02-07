@@ -342,7 +342,7 @@ config :merkel, hash_apply: :double
 
 ```elixir
 def deps do
-  [{:merkel, "~> 1.0.0"}]
+  [{:merkel, "~> 1.0.2"}]
 end
 ```
 
