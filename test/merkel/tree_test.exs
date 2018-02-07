@@ -77,6 +77,9 @@ defmodule Merkel.TreeTest do
     proof = %Merkel.Audit{key: "starfish", path: nil}
     assert proof == Merkel.audit(empty, "starfish")
     assert false == Merkel.verify(proof, nil)
+
+    # print
+    assert :ok == Merkel.print(empty)
   end
 
   # root
@@ -201,6 +204,9 @@ defmodule Merkel.TreeTest do
       proof = %Merkel.Audit{key: k1, path: {}}
       assert proof == Merkel.audit(t0, k1)
       assert true == Merkel.verify(proof, k1_hash)
+
+      # print
+      assert :ok == Merkel.print(t0)
     end
   end
 
@@ -414,6 +420,9 @@ defmodule Merkel.TreeTest do
 
       # audit
       assert true == Merkel.verify(Merkel.audit(t0, k1), t0_hash_size2)
+
+      # print
+      assert :ok == Merkel.print(t0)
     end
   end
 end

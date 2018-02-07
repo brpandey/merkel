@@ -28,7 +28,6 @@ defmodule Merkel.Printer do
 
   """
   @spec pretty_print(Tree.t()) :: :ok
-  def pretty_print(nil), do: :ok
   def pretty_print(%Tree{root: nil}), do: :ok
 
   def pretty_print(%Tree{root: root}) do
