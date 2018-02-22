@@ -7,6 +7,9 @@ defmodule Merkel.CryptoTest do
 
   test "default hash function" do
     assert @hello_hash == Merkel.Crypto.hash("hello")
+    assert @hello_hash == Merkel.Crypto.hash("hello", nil)
+    assert @hello_hash == Merkel.Crypto.hash("hello", :kx999)
+    assert @hello_hash == Merkel.Crypto.hash("hello", :sha256)
     assert @hello_hash == Merkel.Crypto.hash("hello", :sha256, &:crypto.hash/2)
   end
 
@@ -17,16 +20,33 @@ defmodule Merkel.CryptoTest do
     assert @hello_hash == Merkel.Crypto.hash("hello", nil, lambda)
   end
 
-  test "incorrect user supplied hash function" do
+  test "incorrect arity user supplied hash function" do
     lambda = &(:crypto.hash(&1, &2) |> Base.encode16(case: :lower))
 
     error = %ArgumentError{
       message:
-        "Please ensure hash function passed in has arity 1, accepting a single binary argument."
+        "Please ensure hash function passed in has arity 1, accepting a binary and then returning a binary."
     }
 
     assert @hello_hash == Merkel.Crypto.hash("hello")
     assert catch_error(Merkel.Crypto.hash("hello", nil, lambda)) == error
+  end
+
+  test "incorrect type user supplied hash function" do
+    # lambda1 has wrong output type (and makes a lousy hash function)
+    lambda1 = &String.to_integer(&1)
+
+    # lambda2 has wrong input and output type 
+    lambda2 = &Kernel.round(&1)
+
+    error = %ArgumentError{
+      message:
+        "Please ensure hash function passed in has arity 1, accepting a binary and then returning a binary."
+    }
+
+    assert @hello_hash == Merkel.Crypto.hash("hello")
+    assert catch_error(Merkel.Crypto.hash("hello", nil, lambda1)) == error
+    assert catch_error(Merkel.Crypto.hash("hello", nil, lambda2)) == error
   end
 
   test "double hashing" do

@@ -30,7 +30,7 @@ defmodule Merkel.Crypto do
   anonymous function with arity 1 which accepts a binary argument
   """
 
-  @spec hash(binary, none | atom, none | function) :: String.t()
+  @spec hash(binary, none | atom, none | function) :: binary
 
   def hash(bin), do: hash(bin, @hash_type, @hash_function)
   def hash(bin, type), do: hash(bin, type, @hash_function)
@@ -43,14 +43,16 @@ defmodule Merkel.Crypto do
       # if a hash function has been specified other than the default
       true ->
         try do
-          # Anonymous function must have arity 1
-          func.(bin)
+          # Anonymous function must have arity 1 accepting binary and returning binary
+          case func.(bin) do
+            value when is_binary(value) -> value
+          end
         rescue
           _ ->
             # Remind user
             msg =
               "Please ensure hash function passed in has arity 1, " <>
-                "accepting a single binary argument."
+                "accepting a binary and then returning a binary."
 
             raise ArgumentError, message: msg
         end
@@ -58,7 +60,7 @@ defmodule Merkel.Crypto do
   end
 
   # Private helper routine to hash with the default hash function
-  @spec do_hash(binary, atom) :: String.t()
+  @spec do_hash(binary, atom) :: binary
   defp do_hash(bin, type) when is_binary(bin) do
     case type do
       # Handle the double hash separately
@@ -74,8 +76,8 @@ defmodule Merkel.Crypto do
     end
   end
 
-  # Public helper routine to concat hashes takes hash strings or Nodes as args
-  @spec hash_concat(binary | Node.t(), binary | Node.t()) :: String.t()
+  # Public helper routine to concat hashes takes hash binaries or Nodes as args
+  @spec hash_concat(binary | Node.t(), binary | Node.t()) :: binary
   def hash_concat(lh, rh) when is_binary(lh) and is_binary(rh), do: hash(lh <> rh)
   def hash_concat(%Node{} = l, %Node{} = r), do: hash(l.key_hash <> r.key_hash)
 end
