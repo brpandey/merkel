@@ -5,40 +5,72 @@ defmodule Merkel.Crypto do
 
   alias Merkel.BinaryNode, as: Node
 
-  @hash_type Application.get_env(:merkel, :hash_algorithm)
-  @hash_apply Application.get_env(:merkel, :hash_apply)
+  @default_hash_type :sha256
+  @default_hash_function &:crypto.hash/2
 
-  @default_hash :sha256
-  @hash_algorithms [:md5, :ripemd160, :sha, :sha224, :sha256, :sha384, :sha512]
+  @hash_type Application.get_env(:merkel, :hash_algorithm, @default_hash_type)
+  @hash_function Application.get_env(:merkel, :hash_function, @default_hash_function)
 
-  # Public helper routine to hash
-  # Takes hash type with default being :sha256,
-  # and hash apply whose default is :single
-  @spec hash(binary, atom, atom) :: String.t()
-  def hash(bin, type \\ @hash_type, apply \\ @hash_apply) when is_binary(bin) do
-    # If not valid hash_algorithm or not provided use the default
-    case type do
-      t when t in @hash_algorithms ->
-        hash1(bin, t, apply)
+  # For use with the Erlang crypto library
+  @hash_algorithms [
+    :md5,
+    :ripemd160,
+    :sha,
+    :sha224,
+    :sha256,
+    :sha384,
+    :sha512,
+    :sha256_sha256
+  ]
 
-      # default case
-      _ ->
-        hash1(bin, @default_hash, apply)
+  @doc """
+  Performs hash
+
+  Either uses the default Erlang crypto library or accepts a user specified
+  anonymous function with arity 1 which accepts a binary argument
+  """
+
+  @spec hash(binary, none | atom, none | function) :: String.t()
+
+  def hash(bin), do: hash(bin, @hash_type, @hash_function)
+  def hash(bin, type), do: hash(bin, type, @hash_function)
+
+  def hash(bin, type, func) when is_binary(bin) and is_atom(type) do
+    cond do
+      func == @default_hash_function ->
+        do_hash(bin, type)
+
+      # if a hash function has been specified other than the default
+      true ->
+        try do
+          # Anonymous function must have arity 1
+          func.(bin)
+        rescue
+          _ ->
+            # Remind user
+            msg =
+              "Please ensure hash function passed in has arity 1, " <>
+                "accepting a single binary argument."
+
+            raise ArgumentError, message: msg
+        end
     end
   end
 
-  # Public helper routine to hash with no arg defaults
-  @spec hash1(binary, atom, atom) :: String.t()
-  def hash1(bin, type, apply)
-      when is_binary(bin) and is_atom(type) and is_atom(apply) do
-    case apply do
-      :double ->
-        :crypto.hash(type, :crypto.hash(type, bin))
+  # Private helper routine to hash with the default hash function
+  @spec do_hash(binary, atom) :: String.t()
+  defp do_hash(bin, type) when is_binary(bin) do
+    case type do
+      # Handle the double hash separately
+      :sha256_sha256 ->
+        :crypto.hash(:sha256, :crypto.hash(:sha256, bin))
         |> Base.encode16(case: :lower)
 
-      # default is hash once
-      _ ->
+      t when t in @hash_algorithms ->
         :crypto.hash(type, bin) |> Base.encode16(case: :lower)
+
+      _ ->
+        :crypto.hash(@default_hash_type, bin) |> Base.encode16(case: :lower)
     end
   end
 

@@ -320,18 +320,19 @@ iex> Merkel.print(m6)
 
 ```elixir
 # Override in config.exs
-# Options are: :md5, :ripemd160, :sha, :sha224, :sha256, :sha384, :sha512
+# Options are: :md5, :ripemd160, :sha, :sha224, :sha256, :sha384, :sha512, :sha256_sha256
 config :merkel, hash_algorithm: :sha384
 ```
 
 
-* Configure the hash apply to override the default :single (if necessary)
+* Configure the hash function to pass in a custom lambda with arity 1 (if necessary)
 
 ```elixir
 # Override in config.exs
-# Options are: :single, :double
-# E.g. Bitcoin does a double :sha256 hash, meaning it hashes twice
-config :merkel, hash_apply: :double             
+# Function must have arity 1, with the param passed in being the binary
+config :merkel, 
+  hash_function: 
+    &:crypto.hash(:ripemd160, :crypto.hash(:sha256, &1)) |> Base.encode16(case: :lower)
 ```
 
 
@@ -342,7 +343,7 @@ config :merkel, hash_apply: :double
 
 ```elixir
 def deps do
-  [{:merkel, "~> 1.0.2"}]
+  [{:merkel, "~> 1.0.3"}]
 end
 ```
 
