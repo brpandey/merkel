@@ -111,12 +111,12 @@ defmodule Merkel.Audit do
     # Combine the two lists so we can easily reduce to the audit patterned path
     # The audit trail is just a list of the audit hashes
     # The pattern trail tracks the ordering
-    zipper = Enum.zip(audit_trail, pattern_trail)
+    zipped = Enum.zip(audit_trail, pattern_trail)
 
     # Create the audit path with the hash order information already encoded into the path
     # (This way we don't have to keep track of left and rights separately or use extra overhead structures)
     # The path is a nested tuple :)
-    Enum.reduce(zipper, {}, fn {audit_hash, directive}, acc ->
+    Enum.reduce(zipped, {}, fn {audit_hash, directive}, acc ->
       case directive do
         :audit_on_right -> {acc, audit_hash}
         :audit_on_left -> {audit_hash, acc}

@@ -329,7 +329,7 @@ config :merkel, hash_algorithm: :sha384
 
 ```elixir
 # Override in config.exs
-# Function must have arity 1, with the param passed in being the binary
+# Function must have arity 1, accepting a binary and then returning a binary
 config :merkel, 
   hash_function: 
     &:crypto.hash(:ripemd160, :crypto.hash(:sha256, &1)) |> Base.encode16(case: :lower)

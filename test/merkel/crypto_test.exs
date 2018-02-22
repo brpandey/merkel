@@ -5,7 +5,7 @@ defmodule Merkel.CryptoTest do
 
   # https://bitcoin.stackexchange.com/questions/5671/how-do-you-perform-double-sha-256-encoding
 
-  test "default hash function" do
+  test "default hash" do
     assert @hello_hash == Merkel.Crypto.hash("hello")
     assert @hello_hash == Merkel.Crypto.hash("hello", nil)
     assert @hello_hash == Merkel.Crypto.hash("hello", :kx999)
