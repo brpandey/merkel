@@ -65,8 +65,7 @@ defmodule Merkel.Crypto do
     case type do
       # Handle the double hash separately
       :sha256_sha256 ->
-        :crypto.hash(:sha256, :crypto.hash(:sha256, bin))
-        |> Base.encode16(case: :lower)
+        sha256_2_hash(bin)
 
       t when t in @hash_algorithms ->
         :crypto.hash(type, bin) |> Base.encode16(case: :lower)
@@ -76,8 +75,15 @@ defmodule Merkel.Crypto do
     end
   end
 
-  # Public helper routine to concat hashes takes hash binaries or Nodes as args
+  @doc "Public helper routine to concat hashes takes hash binaries or Nodes as args"
   @spec hash_concat(binary | Node.t(), binary | Node.t()) :: binary
   def hash_concat(lh, rh) when is_binary(lh) and is_binary(rh), do: hash(lh <> rh)
   def hash_concat(%Node{} = l, %Node{} = r), do: hash(l.key_hash <> r.key_hash)
+
+  @doc "Public helper for bitcoin double hash"
+  @spec sha256_2_hash(binary) :: binary
+  def sha256_2_hash(bin) when is_binary(bin) do
+    :crypto.hash(:sha256, :crypto.hash(:sha256, bin))
+    |> Base.encode16(case: :lower)
+  end
 end

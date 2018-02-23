@@ -160,7 +160,7 @@ defmodule Merkel.BinaryHashTree do
   ###################
 
   # Public helper routine to get merkle tree (root) hash
-  @spec tree_hash(nil | t) :: nil | String.t()
+  @spec tree_hash(nil | t) :: nil | binary
   def tree_hash(nil), do: nil
   def tree_hash(%Tree{root: nil}), do: nil
   def tree_hash(%Tree{root: root}), do: root.key_hash

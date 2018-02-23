@@ -354,14 +354,22 @@ config :merkel, hash_algorithm: :sha384
 ```
 
 
-* Configure the hash function to pass in a custom lambda with arity 1 (if necessary)
+* Configure the hash function to pass in a &Mod.fun/1 (if necessary)
 
 ```elixir
 # Override in config.exs
-# Function must have arity 1, accepting a binary and then returning a binary
-config :merkel, 
-  hash_function: 
-    &:crypto.hash(:ripemd160, :crypto.hash(:sha256, &1)) |> Base.encode16(case: :lower)
+# Function must be specified using &Mod.fun/arity format
+# Function have arity 1, accepting a binary and then returning a binary
+# Note if you have a custom function like: 
+#  &(:crypto.hash(:ripemd160, :crypto.hash(:sha256, &1)) |> Base.encode16(case: :lower))
+
+# Wrap it in a module and function then pass the MFA
+config :merkel, hash_function: &MyMod.ripemd160_sha256_hash/1 
+
+# another
+
+config :merkel, hash_function: &Merkel.Crypto.sha256_2_hash/1
+
 ```
 
 
@@ -372,7 +380,7 @@ config :merkel,
 
 ```elixir
 def deps do
-  [{:merkel, "~> 1.0.3"}]
+  [{:merkel, "~> 1.0"}]
 end
 ```
 

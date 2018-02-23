@@ -2,6 +2,7 @@ defmodule Merkel.CryptoTest do
   use ExUnit.Case, async: true
 
   @hello_hash "2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824"
+  @hello_double_hash "9595c9df90075148eb06860365df33584b75bff782a510c6cd4883a419833d50"
 
   # https://bitcoin.stackexchange.com/questions/5671/how-do-you-perform-double-sha-256-encoding
 
@@ -14,10 +15,14 @@ defmodule Merkel.CryptoTest do
   end
 
   test "correct user supplied hash function" do
-    lambda = &(:crypto.hash(:sha256, &1) |> Base.encode16(case: :lower))
+    # NOTE: When supplying in config file, must use the &Mod.fun/arity format
+    # The anonymous function here won't work via the config file
 
-    assert @hello_hash == Merkel.Crypto.hash("hello")
-    assert @hello_hash == Merkel.Crypto.hash("hello", nil, lambda)
+    lambda = &(:crypto.hash(:sha384, &1) |> Base.encode16(case: :lower))
+
+    hello_hash = lambda.("hello")
+
+    assert hello_hash == Merkel.Crypto.hash("hello", nil, lambda)
   end
 
   test "incorrect arity user supplied hash function" do
@@ -61,5 +66,6 @@ defmodule Merkel.CryptoTest do
     hello_hash_hex2 = hello_hash_bin2 |> Base.encode16(case: :lower)
 
     assert hello_hash_hex2 == Merkel.Crypto.hash("hello", :sha256_sha256)
+    assert @hello_double_hash == hello_hash_hex2
   end
 end
