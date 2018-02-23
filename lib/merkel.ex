@@ -42,4 +42,10 @@ defmodule Merkel do
 
   @spec print(Tree.t()) :: :ok
   def print(%Tree{} = t), do: Printer.pretty_print(t)
+
+  @spec dump(Tree.t()) :: binary
+  def dump(%Tree{} = t), do: Tree.dump(t)
+
+  @spec store(Tree.t(), binary) :: :ok | no_return()
+  def store(%Tree{} = t, path) when is_binary(path), do: Tree.store(t, path)
 end

@@ -1,4 +1,4 @@
-defmodule Merkel.TreeTest do
+defmodule Merkel.TreeCrudTest do
   use ExUnit.Case, async: true
 
   # Test tree create, lookup, keys, insert, delete, size, tree_hash operations

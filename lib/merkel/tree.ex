@@ -8,7 +8,7 @@ defmodule Merkel.BinaryHashTree do
   tree without any initial rotations or initial rehashings
 
   Keys are binary, e.g. a utf8 encoded sequence of bytes (string) or just bytes
-  Values are any type but for compactness binary or numbers are preferred
+  Values are any type (use your discretion if you want the tree to be more compact)
 
   Keys and values are only stored in the leaves
   Inner nodes use the search_key value to determine order
@@ -34,14 +34,54 @@ defmodule Merkel.BinaryHashTree do
 
   @doc """
   Create balanced tree given a list of {k,v} pairs or create empty tree
+
+  Given a list of atom key and binary value pairs, the atom options are
+  :etf and :path to support creation from either a
+  merkel etf binary or a file containing a merkel etf binary
   """
-  @spec create(none | list(pair)) :: t | no_return
+  @spec create(none | list) :: t | no_return
   def create(), do: %Tree{size: 0, root: nil}
   def create([]), do: create()
 
   def create([{k, _v} | _tail] = list) when is_binary(k) do
     {size, root} = create_tree(list)
     %Tree{size: size, root: root}
+  end
+
+  def create([{k, _v} | _tail] = opts) when is_atom(k) do
+    # Upon the first successful fetch of either the erlang term format (etf) value
+    # or path value, convert it to the Merkel term and halt
+
+    Enum.reduce_while([:etf, :path], %Tree{} = create(), fn key, acc ->
+      # If path, read the file path, set the value as the file binary and convert over
+      # If etf, the value is already the merkel term in binary format, so convert it over
+      case Keyword.fetch(opts, key) do
+        {:ok, v} when is_binary(v) ->
+          v =
+            case key do
+              :path -> File.read!(v)
+              _ -> v
+            end
+
+          acc =
+            case :erlang.binary_to_term(v) do
+              %Tree{} = tree ->
+                tree
+
+              _ ->
+                raise ArgumentError,
+                      "Erlang Term Format does not contain a well-formed Merkel Tree term"
+            end
+
+          {:halt, acc}
+
+        :error ->
+          {:cont, acc}
+
+        _ ->
+          raise ArgumentError, "Unsupported option creation type or value"
+      end
+    end)
   end
 
   @doc """
@@ -102,6 +142,18 @@ defmodule Merkel.BinaryHashTree do
         msg
     end
   end
+
+  @doc """
+  Convert tree to erlang term format
+  """
+  @spec dump(t) :: binary
+  def dump(%Tree{} = t), do: :erlang.term_to_binary(t)
+
+  @doc """
+  Store tree to file path p, in erlang term format
+  """
+  @spec store(t, binary) :: :ok | no_return()
+  def store(%Tree{} = t, p) when is_binary(p), do: File.write!(p, dump(t))
 
   ###################
   # PUBLIC HELPERS #

@@ -31,9 +31,10 @@ A Source of Data Integrity -
 * Creation from list creates a balanced tree without any initial rotations or rehashings (RECOMMENDED)
 * Supports key value storage, retrieval, and deletion
 * Supports these hash algorithms: md5, ripemd160, sha, sha224, sha256, sha384, sha512 - See [crypto](http://erlang.org/doc/man/crypto.html#hash-2)
-* Supports double hashing
+* Supports specifying a custom hash function with arity 1, which accepts a binary argument and returns a binary
 * Provides proof of existence in verifiable format
-* Keys are binary, and values are any type (use your discretion if you want the tree to be compact)
+* Keys are binary, and values are any type (use your discretion if you want the tree to be more compact)
+* Supports simple serialization and deserialization
 
 ## Usage
 
@@ -175,6 +176,7 @@ aardvark ant elephant giraffe walr zebra
 * Delete key
 
 ```elixir
+# "daisy" is not an animal type, delete!
 iex> {:ok, m4} = Merkel.delete(m3, "daisy")
 {:ok,
  #Merkel.Tree<{6,
@@ -310,8 +312,35 @@ iex> Merkel.print(m6)
                  \
                      0 aardvark cf9c..
 :ok
-
 ```
+
+
+* Dump, Store, New
+
+```elixir
+iex> etf = Merkel.dump(m6)
+<<131, 116, 0, 0, 0, 3, 100, 0, 10, 95, 95, 115, 116, 114, 117, 99, 116, 95, 95,
+  100, 0, 28, 69, 108, 105, 120, 105, 114, 46, 77, 101, 114, 107, 101, 108, 46,
+  66, 105, 110, 97, 114, 121, 72, 97, 115, 104, 84, 114, 101, 101, ...>>
+
+iex> Merkel.store(m6, "./merkel.tmp")
+
+iex> Merkel.new(etf: etf)
+#Merkel.Tree<{7,
+ {"e79f6fa607ad5d0a8e93a8ba759b266d52a71471222f11fe1ab07ee89ef9f4a4", "<=gi..>",
+  3,
+  {"3c2f..", "<=an..>", 2,
+   {"2fc5..", "<=aa..>", 1, {"cf9c..", "aardvark", 0},
+    {"b0ce..", "anteater", 0}},
+   {"3b00..", "<=el..>", 1, {"cd08..", "elephant", 0}, {"6bb7..", "giraffe", 0}}},
+  {"0d77..", "<=wa..>", 2,
+   {"b881..", "<=pe..>", 1, {"0a43..", "penguin", 0}, {"9671..", "walrus", 0}},
+   {"676c..", "zebra", 0}}}}>
+
+iex> Merkel.new(path: "./merkel.tmp")
+..(same as above)..
+```
+
 
 ## Configure
 
@@ -350,8 +379,10 @@ end
 
 ## Future
 
-* Parallel insertions / deletions? :)
-* Serialization format?
+* Parallel insertions / deletions? 
+  ** (would depend on static tree structure regardless of insertion order) :)
+* Tree hash exchange serialization format?
+* More extensive tree testing?
 
 ## Thanks!
 
