@@ -428,4 +428,79 @@ defmodule Merkel.TreeCrudTest do
       assert :ok == Merkel.print(t0)
     end
   end
+
+
+  test "compare tree at max display size and one size larger, by deleting and reinserting same keys" do
+    tdata = big_tree()
+
+    {:ok, {tree, _t1, _t2}} = tdata |> Keyword.fetch(:trees)
+    {:ok, valid_keys} = tdata |> Keyword.fetch(:valid_keys)
+
+    sorted_vkeys = Enum.sort(valid_keys)
+
+    # Check to see the tree's display
+    tree_str_65 =
+      "#Merkel.Tree<{65, {\"9ca159ef40742ccdaa45bcce51c0fb48534997f72060b0eb4bc5c31ad85513da\", 7, \"...\", \"...\"}}>"
+
+    assert tree_str_65 == "#{inspect(tree)}"
+
+    tree_hash = Merkel.tree_hash(tree)
+
+    # Grab the last key and third key :)
+    skey1 = Enum.at(sorted_vkeys, -1)
+    skey2 = Enum.at(sorted_vkeys, 2)
+
+    # Sanity check
+    {:ok, _} = Merkel.lookup(tree, skey1)
+
+    # Delete right most key
+    {:ok, tree} = Merkel.delete(tree, skey1)
+
+    # Ensure in the new tree, the key is not found
+    {:error, _} = Merkel.lookup(tree, skey1)
+
+    assert tree_str_64() == "#{inspect(tree)}"
+
+    # Insert the same previously deleted key
+    tree = Merkel.insert(tree, {skey1, "wakawakawaka"})
+
+    # The tree hash is not guarenteed to be the same
+    # since we've udpated inner search keys, but in this case it is 
+    # the same since it is the right most element
+    # and the tree structure didn't change (no rebalancing and no inner search keys reupdate)
+
+    new_tree_hash = Merkel.tree_hash(tree)
+    assert tree_hash == new_tree_hash
+
+    # Check the display again
+    assert tree_str_65 == "#{inspect(tree)}"
+
+    # Update the key with a new value
+    tree = Merkel.insert(tree, {skey1, "keep calm and carry on"})
+
+    # The tree hash is the same because the key is the same we're just inserting the value
+    assert new_tree_hash == Merkel.tree_hash(tree)
+
+    # Check the display again
+    assert tree_str_65 == "#{inspect(tree)}"
+
+    # Delete the third left most key
+    {:ok, tree} = Merkel.delete(tree, skey2)
+
+    # Reinsert the same previously deleted third left most key
+    tree = Merkel.insert(tree, {skey2, "I feel refreshed"})
+
+    # In this case the hashes are different when we try to reinsert
+    # Hence reinsert the same key right after deleting doesn't
+    # guarantee the merkle root will be the same
+
+    new_new_tree_hash = Merkel.tree_hash(tree)
+    assert new_tree_hash != new_new_tree_hash
+
+    new_tree_str_65 =
+      "#Merkel.Tree<{65, {\"77fa5b3594f168ce62d76d4cbcf7fdda27cef7aaa10bc15b04b52ef6b2ec8257\", 7, \"...\", \"...\"}}>"
+
+    # Check the display again, it has a new merkle root
+    assert new_tree_str_65 == "#{inspect(tree)}"
+  end
 end

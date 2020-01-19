@@ -39,7 +39,8 @@ defmodule Merkel.AVLTest do
     h2 = Enum.chunk_every(h1, 2) |> Enum.map(fn [l, r] -> Merkel.Crypto.hash_concat(l, r) end)
 
     h3 =
-      Enum.chunk_every(h2, 2) |> Enum.map(fn [l, r] -> Merkel.Crypto.hash_concat(l, r) end)
+      Enum.chunk_every(h2, 2)
+      |> Enum.map(fn [l, r] -> Merkel.Crypto.hash_concat(l, r) end)
       |> List.first()
 
     assert @root_hash = h3

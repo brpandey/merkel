@@ -4,7 +4,7 @@ defmodule Merkel.Mixfile do
   def project do
     [
       app: :merkel,
-      version: "1.0.4",
+      version: "1.0.5",
       elixir: "~> 1.5",
       start_permanent: Mix.env() == :prod,
       preferred_cli_env: [
@@ -51,7 +51,8 @@ defmodule Merkel.Mixfile do
   defp deps do
     [
       {:ex_doc, "~> 0.18.1", only: :dev},
-      {:excoveralls, "~> 0.7.4", only: [:test]}
+      {:excoveralls, "~> 0.7.4", only: [:test]},
+      {:propcheck, "~> 1.2", only: [:test, :dev]}
     ]
   end
 end
