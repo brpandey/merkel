@@ -18,6 +18,12 @@ defmodule Merkel do
   @spec keys(Tree.t()) :: list
   def keys(%Tree{} = t), do: Tree.keys(t)
 
+  @spec values(Tree.t()) :: list
+  def values(%Tree{} = t), do: Tree.values(t)
+
+  @spec to_list(Tree.t()) :: list
+  def to_list(%Tree{} = t), do: Tree.to_list(t)
+
   @spec insert(Tree.t(), Tree.pair()) :: Tree.t()
   def insert(%Tree{} = t, {k, v}) when is_binary(k), do: Tree.insert(t, {k, v})
 

@@ -18,14 +18,28 @@ defmodule Merkel.TreePropTest do
   @min_tree_size :option_min_one_tree
   @middle_key_min_tree_size :option_min_four_tree
 
+
+  property "verify bulk data retrieval routines (get, values, to_list) work in tree of variable sizes" do
+    forall {t, pairs, sorted_keys, _key, _size} <- generate_tree() do
+
+      # Tree.keys already sorted
+      assert sorted_keys == Tree.keys(t)
+
+      the_values = Tree.values(t) |> Enum.sort()
+      sorted_values = pairs |> values() |> Enum.sort()
+      assert sorted_values == the_values
+
+      # Tree.to_list already sorted
+      sorted_list = pairs |> Enum.sort()
+      assert sorted_list == Tree.to_list(t)
+    end
+  end
+
   property "verify audit hashes work for each key in tree of variable sizes" do
-    forall {t, _pairs, sorted_keys, key, _size} <- generate_tree() do
-      the_keys = Tree.keys(t) |> Enum.sort()
-
-      assert sorted_keys == the_keys
-
+    forall {t, _pairs, _sorted_keys, key, _size} <- generate_tree() do
       proof = Audit.create(t, key)
-      _is_verified = Audit.verify(proof, Tree.tree_hash(t))
+      tree_hash = Tree.tree_hash(t)
+      _is_verified = Audit.verify(proof, tree_hash)
     end
   end
 
@@ -198,6 +212,9 @@ defmodule Merkel.TreePropTest do
       ]
     )
   end
+
+  # Helper to extract value list from kv tuple list
+  def values([{k, _v} | _tail] = list) when is_binary(k), do: elem(Enum.unzip(list), 1)
 
   # Provide more human readable text
   def str_text(lambda) when is_function(lambda, 0) do

@@ -92,9 +92,18 @@ defmodule Merkel.BinaryHashTree do
 
   @doc "Returns list of keys from bottom left of tree to bottom right"
   @spec keys(t) :: list
-  def keys(%Tree{root: r}) do
-    do_keys(r, []) |> Enum.reverse()
-  end
+  def keys(%Tree{root: r}), do: do_traverse(r, :keys, []) |> Enum.reverse()
+
+  @doc "Returns list of values from bottom left of tree to bottom right"
+  @spec values(t) :: list
+  def values(%Tree{root: r}), do: do_traverse(r, :values, []) |> Enum.reverse()
+
+  @doc """
+  Returns a list of the tree's key-value pairs in {k,v} tuple form.
+  Pairs are extracted from the tree bottom left to bottom right.
+  """
+  @spec to_list(t) :: list
+  def to_list(%Tree{root: r}), do: do_traverse(r, :to_list, []) |> Enum.reverse()
 
   @doc """
   Adds key value pair and then ensures tree is balanced.
@@ -239,21 +248,21 @@ defmodule Merkel.BinaryHashTree do
   # Helpers to retrieve key list
 
   # Base case nil node
-  @spec do_keys(nil | Node.t(), list) :: list
-  defp do_keys(nil, keys_acc), do: keys_acc
+  @spec do_traverse(nil | Node.t(), atom, list) :: list
+  defp do_traverse(nil, _option, acc), do: acc
 
-  # Leaf case, return key
-  defp do_keys(%Node{key: k, left: nil, right: nil}, keys_acc) do
-    # prepend is faster
-    [k] ++ keys_acc
-  end
+  # Leaf cases, return either (key, value or {k,v}) prepended to acc.  Note, prepend is faster
+  defp do_traverse(%Node{key: k, left: nil, right: nil}, :keys, acc), do: [k] ++ acc
+  defp do_traverse(%Node{value: v, left: nil, right: nil}, :values, acc), do: [v] ++ acc
+  defp do_traverse(%Node{key: k, value: v, left: nil, right: nil}, :to_list, acc), do: [{k,v}] ++ acc
 
   # Inner node case
-  defp do_keys(%Node{left: l, right: r}, keys_acc)
-       when not is_nil(l) and not is_nil(r) do
-    acc = do_keys(l, keys_acc)
-    do_keys(r, acc)
+  defp do_traverse(%Node{left: l, right: r}, option, acc)
+  when not is_nil(l) and not is_nil(r) do
+    acc = do_traverse(l, option, acc)
+    do_traverse(r, option, acc)
   end
+
 
   ##############################################################################
   # Delete Node Helpers

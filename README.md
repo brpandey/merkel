@@ -71,6 +71,21 @@ iex> m1 = Merkel.new(l)
   {"9b02..", "<=wa..>", 1, {"9671..", "walrus", 0}, {"676c..", "zebra", 0}}}}>
 ```
 
+```elixir
+iex> Merkel.keys(m1)
+["anteater", "daisy", "giraffe", "walrus", "zebra"]
+```
+
+```elixir
+iex> Merkel.to_list(m1)
+[
+  {"anteater", "12"},
+  {"daisy", "932"},
+  {"giraffe", 29},
+  {"walrus", 49},
+  {"zebra", 23}
+]
+```
 
 ```elixir
 # Notes:
