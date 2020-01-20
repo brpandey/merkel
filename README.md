@@ -390,6 +390,7 @@ end
 Now uses PropCheck, see the interactive iex steps below:
 
 ```elixir
+$ MIX_ENV="test" iex -S mix
 iex(1)> ExUnit.start()
 :ok
 iex(2)> c "test/test_data_helper.exs"
@@ -464,6 +465,8 @@ iex(6)> :proper_gen.pick(Merkel.TreePropTest.generate_tree(:option_min_one_tree)
   ```elixir
 iex(7)> use PropCheck                                            
 PropCheck.TargetedPBT
+```
+```elixir
 iex(8)> sample_shrink(Merkel.TreePropTest.unique_kv_pairs_list())
 [{<<"0VWd29TyU">>,-15},
  {<<"y">>,5},
@@ -484,7 +487,10 @@ iex(8)> sample_shrink(Merkel.TreePropTest.unique_kv_pairs_list())
 ```elixir
 iex(9)> generator = fn() -> Merkel.TreePropTest.kv_pairs_list(:atleast_four) end
 #Function<21.91303403/0 in :erl_eval.expr/5>
-iex(10)> sample_shrink(Merkel.TreePropTest.unique_kv_pairs_list(generator))     [{<<"SpOFfjnNi">>,<<"a">>},
+```
+```elixir
+iex(10)> sample_shrink(Merkel.TreePropTest.unique_kv_pairs_list(generator))     
+[{<<"SpOFfjnNi">>,<<"a">>},
  {<<"46xcvesqV">>,<<"4|)ÓX">>},
  {<<"TOLd8DWOnS">>,14.829839030779532},
  {<<"G1FvfvgK5">>,4.649627366501582},
@@ -580,7 +586,8 @@ iex(10)> sample_shrink(Merkel.TreePropTest.unique_kv_pairs_list(generator))     
 :ok
 ```
 ```elixir
-iex(10)> produce(such_that {_x1, _x2, _x3, _x4, size} <- Merkel.TreePropTest.generate_tree(:option_min_one_tree), when: size == 3)
+iex(11)> produce(such_that {_x1, _x2, _x3, _x4, size} 
+  <- Merkel.TreePropTest.generate_tree(:option_min_one_tree), when: size == 3)
 {:ok,
  {#Merkel.Tree<{3,
    {"a28b2edeeb8e72881763e0ece89c257dc7a317e2bfcd53aefd48ed17059ddfda",
@@ -597,8 +604,9 @@ iex(10)> produce(such_that {_x1, _x2, _x3, _x4, size} <- Merkel.TreePropTest.gen
 ## Thanks!
 
 Thanks for the great Erlang/Elixir/Go/Clojure/Java open source merkle tree 
-related projects for the inspiration! 
+related projects for the inspiration
 
-Most notably [Merklet](https://github.com/ferd/merklet) and [gb_merkel_trees](https://github.com/KrzysiekJ/gb_merkle_trees)
+Most notably [merklet](https://github.com/ferd/merklet) and [gb_merkle_trees](https://github.com/KrzysiekJ/gb_merkle_trees)
 
+Cheers
 Bibek Pandey
