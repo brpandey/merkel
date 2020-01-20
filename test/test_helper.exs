@@ -6,7 +6,7 @@ defmodule Merkel.TestHelper do
   # Since this is not in the lib directory we have to explicitly load it
   Code.load_file("test/test_data_helper.exs")
 
-  import Merkel.Helper
+  alias Merkel.Helper
   alias Merkel.TestDataHelper, as: TDHelper
   alias Merkel.BinaryHashTree, as: Tree
 
@@ -68,6 +68,30 @@ defmodule Merkel.TestHelper do
       end
     )
   end
+
+
+  
+  # Test helper to create the a balanced tree but with inner node branches alternating
+  # in random ways.  Specifically if an inner node has a subtree with 3 children and another
+  # subtree with 2 children, it is randomly determined if the left child will get the subtree
+  # of 3 children and vice versa.  Point being it is not set that the left child will always get
+  # the larger subtree.
+
+  def create_toggle_tree([{k, _v} | _tail] = list)
+  when is_binary(k) do
+
+    # Streams are composable so each of these functions will be applied to each 
+    # value retrieved from the stream
+
+    # Returns a stream of boolean toggle values
+    toggle_stream =
+      Stream.repeatedly(&:rand.uniform/0)
+      |> Stream.map(fn x -> x * 2 end)
+      |> Stream.map(fn x -> x >= 1 end)
+
+    Helper.create_tree(list, toggle_stream)
+  end
+
 
   def tree_str_64(), do: @tree_str_64
 

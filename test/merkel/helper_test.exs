@@ -6,6 +6,7 @@ defmodule Merkel.TreeHelperTest do
   require Logger
 
   import Merkel.Helper
+  import Merkel.TestHelper
 
   @list1 [
     {"zebra", 23},

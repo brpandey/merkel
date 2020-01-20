@@ -28,36 +28,6 @@ defmodule Merkel.Helper do
     {size, root}
   end
 
-  @doc """
-  Public helper to create the a balanced tree but with inner node branches alternating
-  in random ways.  Specifically if an inner node has a subtree with 3 children and another
-  subtree with 2 children, it is randomly determined if the left child will get the subtree
-  of 3 children and vice versa.  Point being it is not set that the left child will always get
-  the larger subtree.
-  """
-  @spec create_toggle_tree(list(pair)) :: tuple
-  def create_toggle_tree([{k, _v} | _tail] = list)
-      when is_binary(k) do
-    # Sort the list by the 0th element of each tuple -> the key
-    list = List.keysort(list, 0)
-
-    size = Enum.count(list)
-
-    # Streams are composable so each of these functions will be applied to each 
-    # value retrieved from the stream
-
-    # Returns a stream of boolean toggle values
-    toggle_stream =
-      Stream.repeatedly(&:rand.uniform/0)
-      |> Stream.map(fn x -> x * 2 end)
-      |> Stream.map(fn x -> x >= 1 end)
-
-    # Once finished the sorted list is reduced into a tree
-    # signified by the tree root, with an empty consume list
-    {{root, _kacc}, [], _} = partition_build(list, size, toggle_stream)
-
-    {size, root}
-  end
 
   ##############################################################################
   # Tree creation helpers

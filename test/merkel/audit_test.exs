@@ -2,6 +2,7 @@ defmodule Merkel.AuditTest do
   use ExUnit.Case, async: true
 
   import Merkel.Helper
+  import Merkel.TestHelper
 
   alias Merkel.BinaryHashTree, as: Tree
 
