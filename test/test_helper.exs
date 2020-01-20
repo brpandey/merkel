@@ -69,7 +69,6 @@ defmodule Merkel.TestHelper do
     )
   end
 
-
   
   # Test helper to create the a balanced tree but with inner node branches alternating
   # in random ways.  Specifically if an inner node has a subtree with 3 children and another

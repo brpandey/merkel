@@ -122,9 +122,6 @@ defmodule Merkel.TreePropTest do
       keys = kv_list |> Enum.map(fn {k, _v} -> k end) |> Enum.sort()
       toggle = prop_list[:toggle]
 
-      # Logger.debug("the kv list size is #{inspect size}")
-      # Logger.debug("\nthe tree the list #{inspect kv_list}, the bools #{inspect toggle}\n\n")
-
       # Either we create the tree with a generate kv_list and toggle sequence, or
       # through iteratively constructing the tree one node at a time
 
