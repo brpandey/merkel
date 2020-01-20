@@ -306,8 +306,6 @@ defmodule Merkel.TreeCrudTest do
       # Ensure the tree of size two matches t0
       assert tree == t0
 
-      # Logger.debug("trees of size 2, 1: #{inspect tree} 2: #{inspect t0}")
-
       # lookup item
       assert {:ok, ^v1} = Merkel.lookup(t0, k1)
       assert {:error, _} = Merkel.lookup(t0, ik)

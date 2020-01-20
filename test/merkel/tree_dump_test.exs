@@ -66,10 +66,6 @@ defmodule Merkel.TreeDumpTest do
 
       assert true == File.exists?(@path)
 
-      # Logger.info("m2 is #{inspect(m2)}")
-
-      # Logger.info("m3 is #{inspect(m3)}")
-
       assert "#Merkel.Tree<{5, {\"f92f0f98d165457a4122bbe165aefa14928f45943f9b11880b51d720a1ad37c1\", \"<=gi..>\", 3, {\"bbe4..\", \"<=da..>\", 2, {\"5ad2..\", \"<=an..>\", 1, {\"b0ce..\", \"anteater\", 0}, {\"4202..\", \"daisy\", 0}}, {\"6bb7..\", \"giraffe\", 0}}, {\"9b02..\", \"<=wa..>\", 1, {\"9671..\", \"walrus\", 0}, {\"676c..\", \"zebra\", 0}}}}>" ==
                "#{inspect(m1)}"
 

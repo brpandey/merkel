@@ -19,7 +19,7 @@ defmodule Merkel.TreePropTest do
   @middle_key_min_tree_size :option_min_four_tree
 
 
-  property "verify bulk data retrieval routines (get, values, to_list) work in tree of variable sizes" do
+  property "verify bulk data retrieval routines (keys, values, to_list) work in tree of variable sizes" do
     forall {t, pairs, sorted_keys, _key, _size} <- generate_tree() do
 
       # Tree.keys already sorted
@@ -39,6 +39,7 @@ defmodule Merkel.TreePropTest do
     forall {t, _pairs, _sorted_keys, key, _size} <- generate_tree() do
       proof = Audit.create(t, key)
       tree_hash = Tree.tree_hash(t)
+
       _is_verified = Audit.verify(proof, tree_hash)
     end
   end

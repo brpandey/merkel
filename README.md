@@ -402,10 +402,10 @@ end
 
 ## Property Testing
 
-Now uses PropCheck, see the interactive iex [steps](https://github.com/brpandey/merkel/blob/master/PROPTEST.md)
+Now uses PropCheck, see the interactive IEX [STEPS](https://github.com/brpandey/merkel/blob/master/PROPTEST.md)
 
 ```elixir
-iex(11)> produce(such_that {_x1, _x2, _x3, _x4, size} 
+iex(11)> produce(such_that {_tree, _kv_list, _keys, _key, size} 
   <- Merkel.TreePropTest.generate_tree(:option_min_one_tree), when: size == 3)
 {:ok,
  {#Merkel.Tree<{3,
@@ -423,9 +423,7 @@ iex(11)> produce(such_that {_x1, _x2, _x3, _x4, size}
 ## Thanks!
 
 Thanks for the great Erlang/Elixir/Go/Clojure/Java open source merkle tree 
-related projects for the inspiration
-
-Most notably [merklet](https://github.com/ferd/merklet) and [gb_merkle_trees](https://github.com/KrzysiekJ/gb_merkle_trees)
+related projects for the inspiration (including [merklet](https://github.com/ferd/merklet) and [gb_merkle_trees](https://github.com/KrzysiekJ/gb_merkle_trees) )
 
 Cheers
 Bibek Pandey
