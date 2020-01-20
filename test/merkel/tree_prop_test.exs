@@ -1,6 +1,7 @@
 defmodule Merkel.TreePropTest do
   @moduledoc """
   Property testing using PropCheck (PropEr)
+  See README for exploring property testing interactively in iex
   """
 
   use ExUnit.Case
@@ -79,8 +80,6 @@ defmodule Merkel.TreePropTest do
       iskey1 = Enum.find_index(sorted_keys, fn x -> x == skey1 end)
       skey_smaller = Enum.at(sorted_keys, iskey1 - 1)
       assert skey_smaller == skey2
-
-      # Logger.debug("Prop2, check 5")
 
       true
     end

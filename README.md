@@ -35,6 +35,7 @@ A Source of Data Integrity -
 * Provides proof of existence in verifiable format
 * Keys are binary, and values are any type (use your discretion if you want the tree to be more compact)
 * Supports simple serialization and deserialization
+* Uses property testing
 
 ## Usage
 
@@ -386,7 +387,7 @@ end
 
 ## Property Testing
 
-Now uses PropCheck, explore!
+Now uses PropCheck, see the interactive iex steps below:
 
 ```elixir
 iex(1)> ExUnit.start()
@@ -397,6 +398,8 @@ iex(3)> c "test/test_helper.exs"
 [Merkel.TestHelper]
 iex(4)> c "test/merkel/tree_prop_test.exs"
 [Merkel.TreePropTest]
+```
+```elixir
 iex(5)> :proper_gen.pick(Merkel.TreePropTest.generate_tree(:option_min_four_tree)) 
 {:ok,
  {#Merkel.Tree<{11,
@@ -442,7 +445,8 @@ iex(5)> :proper_gen.pick(Merkel.TreePropTest.generate_tree(:option_min_four_tree
     <<163, 242, 62, 183, 209, 8, 25, 113, 160>>,
     <<194, 176, 11, 189, 137, 14, 47, 129, 12, 94>>
   ], "1K1VUQe", 11}}
-
+```
+```elixir
 iex(6)> :proper_gen.pick(Merkel.TreePropTest.generate_tree(:option_min_one_tree))  
 {:ok,
  {#Merkel.Tree<{4,
@@ -456,6 +460,8 @@ iex(6)> :proper_gen.pick(Merkel.TreePropTest.generate_tree(:option_min_one_tree)
     {"a4y9MVW", "y"},
     {"u", -6}
   ], ["a4y9MVW", "qdKLAH", "u", "xRMVGkW7Mu"], "xRMVGkW7Mu", 4}}
+  ```
+  ```elixir
 iex(7)> use PropCheck                                            
 PropCheck.TargetedPBT
 iex(8)> sample_shrink(Merkel.TreePropTest.unique_kv_pairs_list())
@@ -474,6 +480,8 @@ iex(8)> sample_shrink(Merkel.TreePropTest.unique_kv_pairs_list())
 [{<<"A">>,1}]
 [{<<"A">>,0}]
 :ok
+```
+```elixir
 iex(9)> generator = fn() -> Merkel.TreePropTest.kv_pairs_list(:atleast_four) end
 #Function<21.91303403/0 in :erl_eval.expr/5>
 iex(10)> sample_shrink(Merkel.TreePropTest.unique_kv_pairs_list(generator))     [{<<"SpOFfjnNi">>,<<"a">>},
@@ -570,6 +578,8 @@ iex(10)> sample_shrink(Merkel.TreePropTest.unique_kv_pairs_list(generator))     
 [{<<"D">>,-9},{<<"C">>,0},{<<"B">>,0},{<<"A">>,0}]
 [{<<"D">>,0},{<<"C">>,0},{<<"B">>,0},{<<"A">>,0}]
 :ok
+```
+```elixir
 iex(10)> produce(such_that {_x1, _x2, _x3, _x4, size} <- Merkel.TreePropTest.generate_tree(:option_min_one_tree), when: size == 3)
 {:ok,
  {#Merkel.Tree<{3,
@@ -587,6 +597,8 @@ iex(10)> produce(such_that {_x1, _x2, _x3, _x4, size} <- Merkel.TreePropTest.gen
 ## Thanks!
 
 Thanks for the great Erlang/Elixir/Go/Clojure/Java open source merkle tree 
-related projects for the inspiration!
+related projects for the inspiration! 
+
+Most notably [Merklet](https://github.com/ferd/merklet) and [gb_merkel_trees](https://github.com/KrzysiekJ/gb_merkle_trees)
 
 Bibek Pandey
