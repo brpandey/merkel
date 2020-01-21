@@ -254,15 +254,16 @@ defmodule Merkel.BinaryHashTree do
   # Leaf cases, return either (key, value or {k,v}) prepended to acc.  Note, prepend is faster
   defp do_traverse(%Node{key: k, left: nil, right: nil}, :keys, acc), do: [k] ++ acc
   defp do_traverse(%Node{value: v, left: nil, right: nil}, :values, acc), do: [v] ++ acc
-  defp do_traverse(%Node{key: k, value: v, left: nil, right: nil}, :to_list, acc), do: [{k,v}] ++ acc
+
+  defp do_traverse(%Node{key: k, value: v, left: nil, right: nil}, :to_list, acc),
+    do: [{k, v}] ++ acc
 
   # Inner node case
   defp do_traverse(%Node{left: l, right: r}, option, acc)
-  when not is_nil(l) and not is_nil(r) do
+       when not is_nil(l) and not is_nil(r) do
     acc = do_traverse(l, option, acc)
     do_traverse(r, option, acc)
   end
-
 
   ##############################################################################
   # Delete Node Helpers

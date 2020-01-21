@@ -28,7 +28,6 @@ defmodule Merkel.Helper do
     {size, root}
   end
 
-
   ##############################################################################
   # Tree creation helpers
 

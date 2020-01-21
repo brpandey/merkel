@@ -1,7 +1,7 @@
 defmodule Merkel.TreePropTest do
   @moduledoc """
   Property testing using PropCheck (PropEr)
-  See README for exploring property testing interactively in iex
+  See README for exploring property testing interactively in IEX
   """
 
   use ExUnit.Case
@@ -18,10 +18,16 @@ defmodule Merkel.TreePropTest do
   @min_tree_size :option_min_one_tree
   @middle_key_min_tree_size :option_min_four_tree
 
+  # Note: collect on the size gives us this size bucket distribution:
+  # 56% {0,10}
+  # 33% {10,20}
+  # 6% {20,30}
+  # 4% {30,40}
+  # 1% {40,50}
 
-  property "verify bulk data retrieval routines (keys, values, to_list) work in tree of variable sizes" do
+  property "verify bulk data retrieval routines (keys, values, to_list) work in tree of variable sizes",
+           [:verbose] do
     forall {t, pairs, sorted_keys, _key, _size} <- generate_tree() do
-
       # Tree.keys already sorted
       assert sorted_keys == Tree.keys(t)
 
@@ -32,6 +38,8 @@ defmodule Merkel.TreePropTest do
       # Tree.to_list already sorted
       sorted_list = pairs |> Enum.sort()
       assert sorted_list == Tree.to_list(t)
+
+      #  collect(true, to_range(10, size))
     end
   end
 
@@ -61,11 +69,9 @@ defmodule Merkel.TreePropTest do
     end
   end
 
-
   # This proves that the inner key data is propagated properly upon delete
   property "deleting middle key in tree of variable size and ensuring state is well-formed" do
     forall {t, _pairs, sorted_keys, _key, _size} <- generate_tree(@middle_key_min_tree_size) do
-
       # NUMBER KEY
       # 1) Grab the key that is the inner key for the root.
       # 2) Delete that key
@@ -108,16 +114,18 @@ defmodule Merkel.TreePropTest do
 
   def generate_tree(min_size \\ @min_tree_size) do
     let prop_list <- [
-      # Note:
-      # Didn't quite work (not able to sync the size of list with size of toggle list,
-      # hence the Stream.cycle below)
-      #
-      # list: sized(size, resize(min(min_size, size), kv_pairs())),
+          # Note:
+          # Didn't quite work (not able to sync the size of list with size of toggle list,
+          # hence the Stream.cycle below)
+          #
+          # list: sized(size, resize(min(min_size, size), kv_pairs())),
 
-      list: kv_pairs_list(min_size),
-      toggle: tree_toggle_params()
-    ] do
-      {key, _v} = prop_list[:list] |> List.first
+          # Also not able to see any effects of running resize on list e.g.
+          # list: resize(150, kv_pairs_list(min_size))
+          list: kv_pairs_list(min_size),
+          toggle: tree_toggle_params()
+        ] do
+      {key, _v} = prop_list[:list] |> List.first()
       kv_list = prop_list[:list]
       size = Enum.count(kv_list)
       keys = kv_list |> Enum.map(fn {k, _v} -> k end) |> Enum.sort()
@@ -127,12 +135,10 @@ defmodule Merkel.TreePropTest do
       # through iteratively constructing the tree one node at a time
 
       tree =
-        oneof(
-          [
-            Helper.create_tree(kv_list, Stream.cycle(toggle)) |> create_helper(),
-            create_tree_iteratively(kv_list)
-          ]
-        )
+        oneof([
+          Helper.create_tree(kv_list, Stream.cycle(toggle)) |> create_helper(),
+          create_tree_iteratively(kv_list)
+        ])
 
       {tree, kv_list, keys, key, size}
     end
@@ -141,13 +147,12 @@ defmodule Merkel.TreePropTest do
   ##############################################################################
   # HELPER FUNCTIONS
 
-
   def kv_pairs() do
-    let pairs <- {key(), value()}, do: pairs
+    let(pairs <- {key(), value()}, do: pairs)
   end
 
   def kv_pairs_list() do
-    let list <- non_empty(list(kv_pairs())), do: list
+    let(list <- non_empty(list(kv_pairs())), do: list)
   end
 
   def kv_pairs_list(:atleast_four) do
@@ -163,9 +168,11 @@ defmodule Merkel.TreePropTest do
     case options do
       @min_tree_size ->
         unique_kv_pairs_list()
+
       @middle_key_min_tree_size ->
-        generator = fn() -> kv_pairs_list(:atleast_four) end
+        generator = fn -> kv_pairs_list(:atleast_four) end
         unique_kv_pairs_list(generator)
+
       true ->
         unique_kv_pairs_list()
     end
@@ -173,26 +180,28 @@ defmodule Merkel.TreePropTest do
 
   # Ensure no duplicate key value pairs e.g {"a", 1} and {"a", 1}
   # but also no duplicate keys e.g. {"a", 1} and {"a", 2}
-  def unique_kv_pairs_list(generator \\ &Mod.kv_pairs_list()/0) when is_function(generator, 0) do
-    such_that(l <- generator.(), when: length(Enum.uniq(l)) == length(l) and
-      length(Enum.uniq(keys(l))) == length(keys(l)))
+  def unique_kv_pairs_list(generator \\ &Mod.kv_pairs_list/0) when is_function(generator, 0) do
+    such_that(
+      l <- generator.(),
+      when:
+        length(Enum.uniq(l)) == length(l) and
+          length(Enum.uniq(keys(l))) == length(keys(l))
+    )
   end
 
   # Generate tree toggle booleans which denote whether tree is right or left heavy at each level
   # Provides variation in tree structure
   def tree_toggle_params() do
-    let bools <- non_empty(list(boolean())), do: bools
+    let(bools <- non_empty(list(boolean())), do: bools)
   end
 
   # Key Generator
   def key() do
     # Prefer readable strings over potentially cryptic raw binary
-    frequency(
-        [
-          {90, str_text(&Mod.text2/0)},
-          {10, binary()}
-        ]
-      )
+    frequency([
+      {90, str_text(&Mod.text2/0)},
+      {10, binary()}
+    ])
   end
 
   # Helper to extract key list from kv tuple list
@@ -201,14 +210,12 @@ defmodule Merkel.TreePropTest do
   # Value Generator 
   def value() do
     # Prefer numbers, then atoms, then some form of binary
-    frequency(
-      [
-        {60, number()},
-        {20, atom()},
-        {15, str_text(&Mod.text3/0)},
-        {5, binary()}
-      ]
-    )
+    frequency([
+      {60, number()},
+      {20, atom()},
+      {15, str_text(&Mod.text3/0)},
+      {5, binary()}
+    ])
   end
 
   # Helper to extract value list from kv tuple list
@@ -226,4 +233,9 @@ defmodule Merkel.TreePropTest do
   def text3(), do: 'abcdefghijklmnopqrstuvwxyz'
   def text4(), do: ':;<=>?@ !#$%&\'()*+-./[\\]^_`{|}~'
 
+  # Helper for collect, so that we can see the sizes of generated output in buckets
+  def to_range(m, n) do
+    base = div(n, m)
+    {base * m, (base + 1) * m}
+  end
 end

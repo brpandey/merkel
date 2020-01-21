@@ -427,7 +427,6 @@ defmodule Merkel.TreeCrudTest do
     end
   end
 
-
   test "compare tree at max display size and one size larger, by deleting and reinserting same keys" do
     tdata = big_tree()
 

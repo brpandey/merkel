@@ -402,7 +402,7 @@ end
 
 ## Property Testing
 
-Now uses PropCheck, see the interactive IEX [STEPS](https://github.com/brpandey/merkel/blob/master/PROPTEST.md)
+Now uses PropCheck, see the interactive IEX [Steps](https://github.com/brpandey/merkel/blob/master/PROPTEST.md)
 
 ```elixir
 iex(11)> produce(such_that {_tree, _kv_list, _keys, _key, size} 
